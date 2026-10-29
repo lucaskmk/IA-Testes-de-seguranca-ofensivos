@@ -1,0 +1,10 @@
+restore_inicio=2026-10-29T11:30:40-03:00
+ Container juiceshop  Recreate
+ Container juiceshop  Recreated
+ Container juiceshop  Starting
+ Container juiceshop  Started
+http_200_apos_s=3
+container_criado=2026-10-29T14:30:40.589409345Z
+imagem=sha256:cea5a4af4aacee498c491491af0408934ec81d004035c0a02ef3e54395e3bf27
+desafios_resolvidos=0
+restore_fim=2026-10-29T11:30:43-03:00 status=OK

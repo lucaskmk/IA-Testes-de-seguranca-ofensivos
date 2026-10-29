@@ -1,0 +1,34 @@
+# Laboratório da AF: alvo (Juice Shop) e estação de ataque (Kali) numa rede Docker interna.
+# A rede "labnet" é internal: os containers não têm rota para a internet, para a LAN
+# do kit nem para o pfSense. Nenhuma porta é publicada no host; o servidor alcança os
+# containers pelo IP da bridge (172.31.80.0/24).
+name: af-lab
+
+services:
+  juiceshop:
+    image: bkimminich/juice-shop:v20.3.0@sha256:cea5a4af4aacee498c491491af0408934ec81d004035c0a02ef3e54395e3bf27
+    container_name: juiceshop
+    networks:
+      labnet:
+        ipv4_address: 172.31.80.10
+    restart: unless-stopped
+
+  kali:
+    build:
+      context: ./kali
+    image: af-kali:2026.10
+    container_name: kali
+    command: ["sleep", "infinity"]
+    init: true
+    networks:
+      labnet:
+        ipv4_address: 172.31.80.20
+    restart: unless-stopped
+
+networks:
+  labnet:
+    name: labnet
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.31.80.0/24
