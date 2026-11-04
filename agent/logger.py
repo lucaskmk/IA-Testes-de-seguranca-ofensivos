@@ -57,5 +57,5 @@ class Registro:
     def saida_bruta(self, turno: int, texto: str) -> tuple[str, str]:
         nome = f"{self.investigacao}_{self.sessao[-25:].replace(':', '')}_turno{turno}.txt"
         caminho = self.pasta / "raw" / nome
-        caminho.write_text(texto, encoding="utf-8")
+        caminho.write_bytes(texto.encode("utf-8"))  # bytes: sem conversão de fim de linha, o hash vale em qualquer SO
         return str(caminho.relative_to(self.pasta.parent)).replace("\\", "/"), sha256(texto)

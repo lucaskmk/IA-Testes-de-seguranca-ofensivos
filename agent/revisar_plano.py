@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 """Fase 3.2: envia o plano do grupo ao modelo local e prepara a tabela de decisões.
 
-Só deve rodar depois que planejamento/plano_testes_grupo.md estiver commitado e enviado ao
-remoto. Grava a chamada em logs/revisao_plano.jsonl e cria planejamento/revisao_llm.md com
-a resposta bruta e a tabela; as colunas de decisão e justificativa são preenchidas pelo grupo.
+Só roda se planejamento/plano_testes_grupo.md estiver commitado, sem alterações locais e
+no remoto (é a prova de que o plano veio antes da revisão). Grava a chamada em
+logs/revisao_plano.jsonl e cria planejamento/revisao_llm.md com a resposta bruta e a tabela;
+as colunas de decisão e justificativa são preenchidas pelo grupo. Não sobrescreve uma
+revisao_llm.md existente, para não apagar decisões já preenchidas.
 Uso: python3 agent/revisar_plano.py
 """
 
 import json
-import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 
 import config as configuracao
 from logger import agora, sha256
+from proveniencia import verificar_plano, versao_codigo
 
 SCHEMA = {
     "type": "object",
@@ -26,12 +29,6 @@ SCHEMA = {
 }
 
 
-def commit_do_plano(caminho) -> str:
-    proc = subprocess.run(["git", "log", "-1", "--format=%H %cI", "--", str(caminho)],
-                          capture_output=True, text=True, cwd=caminho.parent.parent)
-    return proc.stdout.strip() or "plano não commitado"
-
-
 def main() -> int:
     cfg = configuracao.carregar()
     raiz = cfg["caminhos"]["logs"].parent
@@ -39,9 +36,16 @@ def main() -> int:
     if not plano.exists():
         print(f"Plano não encontrado: {plano}", file=sys.stderr)
         return 1
-    commit = commit_do_plano(plano)
-    if commit == "plano não commitado":
-        print("O plano precisa estar commitado (e enviado ao remoto) antes da revisão.", file=sys.stderr)
+    destino = raiz / "planejamento" / "revisao_llm.md"
+    if destino.exists():
+        print(f"{destino} já existe; não vamos sobrescrever decisões preenchidas. Renomeie-o para rodar de novo.",
+              file=sys.stderr)
+        return 1
+    commit, erros = verificar_plano(plano)
+    if "|  |" in plano.read_text(encoding="utf-8"):
+        erros.append("o plano ainda tem células vazias na matriz (é o modelo em branco?)")
+    if erros:
+        print("Revisão não iniciada:\n- " + "\n- ".join(erros), file=sys.stderr)
         return 1
 
     instrucao = cfg["caminhos"]["prompt_revisao"].read_text(encoding="utf-8")
@@ -54,8 +58,12 @@ def main() -> int:
     inicio = time.monotonic()
     req = urllib.request.Request(m["url"].rstrip("/") + "/api/chat", data=json.dumps(corpo).encode(),
                                  headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=int(m["timeout_s"])) as resp:
-        resposta = json.loads(resp.read())
+    try:
+        with urllib.request.urlopen(req, timeout=int(m["timeout_s"])) as resp:
+            resposta = json.loads(resp.read())
+    except (urllib.error.URLError, OSError, json.JSONDecodeError) as erro:
+        print(f"Falha na chamada ao Ollama: {erro}", file=sys.stderr)
+        return 1
     duracao = int((time.monotonic() - inicio) * 1000)
     bruto = resposta.get("message", {}).get("content", "")
     try:
@@ -67,9 +75,12 @@ def main() -> int:
     registro = {"timestamp": agora(), "plano_commit": commit, "plano_sha256": sha256(texto_plano),
                 "prompt_sha256": sha256(instrucao), "modelo": m["nome"], "temperature": m["temperature"],
                 "seed": m["seed"], "mensagens": mensagens, "resposta_bruta": bruto, "json_valido": valido,
-                "duracao_ms": duracao}
+                "duracao_ms": duracao, "codigo": versao_codigo()}
     with open(raiz / "logs" / "revisao_plano.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(registro, ensure_ascii=False) + "\n")
+    if not valido:
+        print("Resposta sem o JSON esperado (registrada em logs/revisao_plano.jsonl). Rode de novo.", file=sys.stderr)
+        return 2
 
     linhas = ["# Revisão do plano pelo LLM (Fase 3.2)", "",
               f"- Plano revisado: `planejamento/plano_testes_grupo.md`, commit `{commit}`",
@@ -82,10 +93,9 @@ def main() -> int:
         linhas.append(f"| {i} | {celula(s.get('parte_do_plano'))} | {celula(s.get('tipo'))} | "
                       f"{celula(s.get('sugestao'))} (motivo do modelo: {celula(s.get('motivo'))}) |  |  |")
     linhas += ["", "## Resposta bruta do modelo", "", "```json", bruto, "```", ""]
-    destino = raiz / "planejamento" / "revisao_llm.md"
     destino.write_text("\n".join(linhas), encoding="utf-8")
     print(f"{len(sugestoes)} sugestões. Tabela em {destino}; preencha decisão e justificativa de cada linha.")
-    return 0 if valido else 2
+    return 0
 
 
 if __name__ == "__main__":

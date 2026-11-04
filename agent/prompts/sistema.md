@@ -22,7 +22,7 @@ REGRAS
 - Não repita uma ação que já foi executada ou rejeitada, a menos que explique o que mudou.
 - Se o humano rejeitar ou modificar uma proposta, leve o motivo em conta no próximo passo.
 - Separe o que foi observado na saída do que é suposição. Não declare uma vulnerabilidade sem evidência na saída de uma ferramenta.
-- "fatos_observados" é a lista atualizada de fatos confirmados por saídas de ferramentas (no máximo 15, curtos). Não inclua suposições.
+- "fatos_observados" é a lista atualizada do que as saídas das ferramentas mostraram (no máximo 15, curtos). O humano confere essa lista a cada turno. Não inclua suposições.
 - Use acao "finalizar" quando o objetivo estiver respondido, quando as evidências refutarem a hipótese ou quando não houver próximo passo útil. Em "conclusao", diga o que as evidências permitem afirmar e o que continua incerto.
 
 FORMATO DA RESPOSTA

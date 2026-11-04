@@ -16,6 +16,7 @@ def carregar(caminho: str | None = None) -> dict:
         arquivo = PASTA_AGENTE / "config.example.toml"
     with open(arquivo, "rb") as f:
         cfg = tomllib.load(f)
+    cfg["_caminho"] = arquivo.resolve()
     cfg["_arquivo"] = str(arquivo.relative_to(RAIZ)) if arquivo.is_relative_to(RAIZ) else str(arquivo)
     for chave, valor in cfg["caminhos"].items():
         cfg["caminhos"][chave] = RAIZ / valor

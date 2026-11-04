@@ -18,9 +18,15 @@ import llm
 import scope
 import tools
 from logger import Registro, sha256
+from proveniencia import versao_codigo
 
 DECISOES = {"a": "AUTORIZADO", "m": "MODIFICADO", "r": "REJEITADO", "f": "FINALIZADO"}
 CLASSIFICACOES = {"c": "CONFIRMADA", "r": "REFUTADA", "i": "INCONCLUSIVA"}
+# Proposta do modelo comparada ao plano 3.1 do grupo, marcada na hora da decisão.
+RELACAO_PLANO = {"i": "IGUAL", "d": "DIFERENTE", "n": "NOVO", "x": "NAO_SE_APLICA"}
+# Vocabulário fixo: tag fora da lista é recusada, para as contagens não se fragmentarem.
+TAGS = ("boa_sugestao", "alucinacao", "interpretacao_errada", "sem_base_no_resultado",
+        "repeticao", "acao_desnecessaria", "fora_escopo", "json_invalido", "falha_ia")
 
 
 def perguntar(texto: str, obrigatorio: bool = False, opcoes: list[str] | None = None) -> str:
@@ -47,6 +53,26 @@ def _json(valor) -> str:
     return json.dumps(valor, ensure_ascii=False, sort_keys=True)
 
 
+def perguntar_tags() -> list[str]:
+    while True:
+        texto = perguntar(f"Tags (vírgula, Enter = nenhuma; {', '.join(TAGS)}): ")
+        tags = [t.strip() for t in texto.split(",") if t.strip()]
+        desconhecidas = [t for t in tags if t not in TAGS]
+        if not desconhecidas:
+            return tags
+        print(f"  tags fora da lista: {desconhecidas}")
+
+
+def diferenca_fatos(antes: list[str], depois: list[str]) -> tuple[list[str], list[str]]:
+    """O que o modelo acrescentou e o que tirou da sua lista de fatos."""
+    return [f for f in depois if f not in antes], [f for f in antes if f not in depois]
+
+
+def _texto_fatos(adicionados: list[str], removidos: list[str]) -> str:
+    linhas = [f"+ {f}" for f in adicionados] + [f"- {f}" for f in removidos]
+    return "\n".join(linhas) or "(sem mudanças)"
+
+
 def _inspecionar_imagem(container: str) -> str | None:
     proc = subprocess.run(["docker", "inspect", container, "--format", "{{.Config.Image}} {{.Image}}"],
                           capture_output=True, text=True)
@@ -60,6 +86,7 @@ class Agente:
         self.objetivo = objetivo
         self.sistema = cfg["caminhos"]["prompt_sistema"].read_text(encoding="utf-8")
         self.fatos: list[str] = []
+        self.fatos_ja_mostrados = False
         self.historico: list[str] = []
         self.propostas_anteriores: dict[str, int] = {}
         self.turno = 0
@@ -69,6 +96,8 @@ class Agente:
             "temperature": m["temperature"], "seed": m["seed"], "num_ctx": m["num_ctx"], "think": m["think"],
             "prompt_sistema_sha256": sha256(self.sistema),
             "arquivo_config": cfg["_arquivo"],
+            "arquivo_config_sha256": sha256(cfg["_caminho"].read_text(encoding="utf-8")),
+            "codigo": versao_codigo(),
             "alvo": f"{cfg['alvo']['host']}:{cfg['alvo']['porta']}",
             "juiceshop": _inspecionar_imagem("juiceshop"),
             "kali": _inspecionar_imagem(cfg["alvo"]["container"]),
@@ -82,7 +111,7 @@ class Agente:
         historico = "\n".join(self.historico[-int(lim["historico_turnos"]):]) or "(nenhum turno anterior)"
         return (f"OBJETIVO DA INVESTIGAÇÃO: {self.objetivo}\n\n"
                 f"TURNO: {self.turno + 1} de {lim['max_turnos']}\n\n"
-                f"FATOS OBSERVADOS ATÉ AGORA:\n{fatos}\n\n"
+                f"FATOS ANOTADOS POR VOCÊ ATÉ AGORA (não verificados pelo humano):\n{fatos}\n\n"
                 f"HISTÓRICO RECENTE:\n{historico}\n\n"
                 f"ÚLTIMO EVENTO:\n{evento}\n\n"
                 "Responda com o objeto JSON pedido.")
@@ -109,11 +138,14 @@ class Agente:
 
     # ---------- interação ----------
 
-    def _mostrar_proposta(self, p: dict, bloqueio: str | None, avisos: list[str], repete: int | None) -> None:
+    def _mostrar_proposta(self, p: dict, bloqueio: str | None, avisos: list[str], repete: int | None,
+                          fatos: tuple[list[str], list[str]]) -> None:
         texto = (f"Ação: {p['acao']}\nFerramenta: {p['ferramenta']}\n"
                  f"Parâmetros: {_json(p['parametros'])}\nJustificativa: {p['justificativa']}")
         if p["acao"] == "finalizar":
             texto += f"\nConclusão proposta: {p['conclusao']}"
+        if not self.fatos_ja_mostrados:
+            texto += f"\nMudanças na lista de fatos do modelo:\n{_texto_fatos(*fatos)}"
         mostrar(f"Turno {self.turno} · proposta do modelo", texto)
         if repete:
             print(f"[atenção: proposta idêntica à do turno {repete}]")
@@ -167,7 +199,9 @@ class Agente:
                 return
 
             self.turno += 1
-            self.fatos = [str(f) for f in proposta["fatos_observados"]][: int(lim["max_fatos"])]
+            novos_fatos = [str(f) for f in proposta["fatos_observados"]][: int(lim["max_fatos"])]
+            adicionados, removidos = diferenca_fatos(self.fatos, novos_fatos)
+            self.fatos = novos_fatos
             chave = f"{proposta['ferramenta']} {_json(proposta['parametros'])}"
             repete = self.propostas_anteriores.get(chave) if proposta["acao"] == "executar" else None
             self.propostas_anteriores.setdefault(chave, self.turno)
@@ -185,8 +219,10 @@ class Agente:
                    "acao_proposta": proposta["acao"], "ferramenta_proposta": proposta["ferramenta"],
                    "parametros_propostos": proposta["parametros"], "justificativa_modelo": proposta["justificativa"],
                    "conclusao_proposta": proposta["conclusao"] or None, "repete_turno": repete,
-                   "bloqueio_escopo": bloqueio, "avisos_escopo": avisos}
-            self._mostrar_proposta(proposta, bloqueio, avisos, repete)
+                   "bloqueio_escopo": bloqueio, "avisos_escopo": avisos,
+                   "fatos_modelo": self.fatos, "fatos_adicionados": adicionados, "fatos_removidos": removidos}
+            self._mostrar_proposta(proposta, bloqueio, avisos, repete, (adicionados, removidos))
+            self.fatos_ja_mostrados = False
 
             if self.turno >= int(lim["max_turnos"]):
                 print(f"[limite de {lim['max_turnos']} turnos atingido: só é possível finalizar]")
@@ -198,6 +234,9 @@ class Agente:
             else:
                 opcoes = ["a", "m", "r", "f"]
             nomes = {"a": "[a]utorizar", "m": "[m]odificar", "r": "[r]ejeitar", "f": "[f]inalizar"}
+            relacao = RELACAO_PLANO[perguntar("Em relação ao plano do grupo: [i]gual / [d]iferente / [n]ovo / [x] não se aplica: ",
+                                              opcoes=list(RELACAO_PLANO))]
+            reg["relacao_plano"] = relacao
             letra = perguntar("Decisão " + " / ".join(nomes[o] for o in opcoes) + ": ", opcoes=opcoes)
             motivo = perguntar("Justificativa da decisão: ", obrigatorio=True)
 
@@ -215,8 +254,7 @@ class Agente:
 
             if letra == "r":
                 tags = ["fora_escopo"] if bloqueio else []
-                extra = perguntar("Tags (vírgula, Enter = nenhuma): ")
-                tags += [t.strip() for t in extra.split(",") if t.strip()]
+                tags += [t for t in perguntar_tags() if t not in tags]
                 reg.update({"decisao_humana": DECISOES["r"], "motivo_decisao": motivo, "tags": tags})
                 self.reg.turno(reg)
                 self.historico.append(f"turno {self.turno}: {chave} -> REJEITADO. Motivo: {motivo}")
@@ -242,12 +280,16 @@ class Agente:
                 evento = f"Resultado do turno {self.turno} ({executado}):\n{resumo}"
             proxima, ids_prox, tent_prox = self.consultar(evento)
             interpretacao = proxima["interpretacao"] if proxima else None
-            mostrar(f"Turno {self.turno} · interpretação do modelo", interpretacao or "(sem resposta válida)")
+            texto = interpretacao or "(sem resposta válida)"
+            if proxima:
+                fatos_prox = [str(f) for f in proxima["fatos_observados"]][: int(lim["max_fatos"])]
+                texto += f"\n\nMudanças na lista de fatos do modelo:\n{_texto_fatos(*diferenca_fatos(self.fatos, fatos_prox))}"
+            mostrar(f"Turno {self.turno} · interpretação do modelo", texto)
 
-            decisao_grupo = perguntar("Decisão do grupo após o resultado (o que a evidência mostra; a interpretação está correta?): ",
+            decisao_grupo = perguntar("Decisão do grupo após o resultado (o que a evidência mostra; a interpretação e os fatos estão corretos?): ",
                                       obrigatorio=True)
             nova_hipotese = perguntar("Nova hipótese (Enter = nenhuma): ") or None
-            tags = [t.strip() for t in perguntar("Tags (vírgula, Enter = nenhuma): ").split(",") if t.strip()]
+            tags = perguntar_tags()
 
             reg.update({
                 "decisao_humana": DECISOES[letra], "motivo_decisao": motivo,
@@ -260,6 +302,7 @@ class Agente:
             })
             self.reg.turno(reg)
             self.historico.append(f"turno {self.turno}: {executado} -> {DECISOES[letra]} -> {tools.linha_curta(cmd.ferramenta, saida)}")
+            self.fatos_ja_mostrados = proxima is not None
             proposta, ids, tentativas = proxima, ids_prox, tent_prox
 
 

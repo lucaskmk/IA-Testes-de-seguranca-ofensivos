@@ -125,4 +125,5 @@ Regra durante este roteiro: **nenhuma IA aberta** (nem o agente, nem chat). Tudo
 - Uma sessão por investigação, no `tmux` do servidor, com o objetivo escrito no plano.
 - A cada proposta do modelo, quem decide é a dupla: **[a]**, **[m]**, **[r]** ou **[f]**, com a justificativa nas palavras de vocês. Depois de cada resultado, também é de vocês a "decisão após o resultado" (o que a evidência mostra e se a interpretação do modelo está certa).
 - Pode ser feito direto no terminal, ou pelo chat: a proposta é mostrada a vocês, vocês respondem com a decisão e a justificativa, e essa resposta é digitada **literalmente** no agente.
-- Marcar tags na hora (`boa_sugestao`, `alucinacao`, `interpretacao_errada`, `repeticao`, `fora_escopo`, `falha_ia`): são a matéria-prima da análise crítica.
+- Marcar tags na hora (lista fixa no agente: `boa_sugestao`, `alucinacao`, `interpretacao_errada`, `sem_base_no_resultado`, `repeticao`, `acao_desnecessaria`, `fora_escopo`, `json_invalido`, `falha_ia`): são a matéria-prima da análise crítica.
+- A cada proposta, marcar se ela é igual, diferente ou nova em relação ao plano 3.1, e conferir as mudanças na lista de fatos do modelo (uma alucinação ali passa a guiar os turnos seguintes).

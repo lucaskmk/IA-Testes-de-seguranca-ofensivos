@@ -79,7 +79,7 @@ Notebook (Wi-Fi WannaCry 172.16.50.x) ── OpenVPN do Grupo 6 (10.8.0.0/24, sp
        IdentitiesOnly yes
    ```
 3. **Navegador no Juice Shop:** `ssh -L 3000:172.31.80.10:3000 kit` e abrir `http://localhost:3000`.
-4. **Sincronizar o código com o servidor:** o repositório local é a fonte; copiar para `~/af` com `tar czf - agent lab | ssh kit 'cd ~/af && tar xzf -'` (normalizar CRLF com `sed -i 's/\r$//'` nos `.sh`/`.py`). Logs gerados no servidor voltam com `ssh kit 'cd ~/af && tar czf - logs lab/evidencias' | tar xzf -` e são commitados.
+4. **Sincronizar o código com o servidor:** o repositório local é a fonte. Preferência: commit + push no notebook e `git pull` em `~/af` (o `revisar_plano.py` exige um clone git com o plano no remoto, e o log grava o commit). Alternativa para testes rápidos: `tar czf - agent lab planejamento | ssh kit 'cd ~/af && tar xzf -'` (normalizar CRLF com `sed -i 's/\r$//'` nos `.sh`/`.py`); o log então mostra `agent_com_alteracoes_nao_commitadas: true`, e o hash dos arquivos (`codigo.sha256_conjunto`) identifica o código. Logs gerados no servidor voltam com `ssh kit 'cd ~/af && tar czf - logs lab/evidencias' | tar xzf -` e são commitados e enviados logo após cada investigação.
 
 ## Estado em 04/11/2026
 

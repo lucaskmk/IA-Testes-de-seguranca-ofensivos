@@ -207,7 +207,8 @@ Cobre os 6 itens da seção 5 do PDF e o que a análise crítica precisa:
 ```
 - Turno REJEITADO: campos de execução e interpretação ficam `null`; o motivo é registrado e enviado ao modelo.
 - Primeira linha de cada investigação: registro `restore` (horário + saída da verificação).
-- Tags marcadas na hora: `falha_ia`, `alucinacao`, `json_invalido`, `repeticao`, `fora_escopo`, `interpretacao_errada`, `boa_sugestao`.
+- Tags marcadas na hora (lista fixa, validada pelo agente): `boa_sugestao`, `alucinacao`, `interpretacao_errada`, `sem_base_no_resultado`, `repeticao`, `acao_desnecessaria`, `fora_escopo`, `json_invalido`, `falha_ia`.
+- Implementado depois da revisão de 04/11: `relacao_plano` (IGUAL/DIFERENTE/NOVO/NAO_SE_APLICA) por proposta; `fatos_modelo`, `fatos_adicionados` e `fatos_removidos` por turno, mostrados ao grupo; `config.codigo` com commit e SHA-256 dos arquivos do agente; `summarize_logs.py` recalcula os SHA-256 das saídas brutas.
 - Logs nunca editados à mão. `agent/summarize_logs.py` gera as métricas (A/M/R/F, falhas por tipo, repetições, tempo por turno) e o `.md` legível de cada investigação.
 
 ---

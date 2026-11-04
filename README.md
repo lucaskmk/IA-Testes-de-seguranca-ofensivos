@@ -88,9 +88,9 @@ Todas as linhas devem sair `PASS`. O script confere versões, se o Ollama e o Ju
 bash lab/restore.sh lab/evidencias/restore_$(date +%Y%m%d_%H%M).txt
 ```
 
-Recria o container (o estado da aplicação vive dentro dele) e confirma o estado inicial: HTTP 200 e nenhum desafio resolvido no placar. Rodamos o restore antes de cada investigação.
+Recria o container (o estado da aplicação vive dentro dele) e confirma o estado inicial: HTTP 200 e nenhum desafio resolvido no placar. Para provar a transição, antes de recriar o script grava um marcador no container atual e anota o id e os desafios resolvidos; depois confere que o id mudou e que o marcador sumiu (falha se não). Rodamos o restore antes de cada investigação.
 
-Teste manual do restore: criar uma conta pelo navegador, rodar o restore e confirmar que o login com essa conta passa a falhar.
+Teste manual complementar: criar uma conta pelo navegador, rodar o restore e confirmar que o login com essa conta passa a falhar.
 
 ### 7. Depois de reiniciar o servidor
 
@@ -111,11 +111,13 @@ python3 agent/agent.py --id I1 --objetivo "<objetivo da investigação>" --resto
 
 Ciclo de cada turno:
 
-1. O modelo recebe o objetivo, os fatos observados até agora e um histórico curto, e responde em JSON (`interpretacao`, `fatos_observados`, `acao`, `ferramenta`, `parametros`, `justificativa`, `conclusao`). JSON inválido gera uma nova tentativa com a mensagem de erro; as duas chamadas ficam registradas.
+1. O modelo recebe o objetivo, a lista de fatos que ele mesmo anotou até agora (apresentada como não verificada) e um histórico curto, e responde em JSON (`interpretacao`, `fatos_observados`, `acao`, `ferramenta`, `parametros`, `justificativa`, `conclusao`). JSON inválido gera uma nova tentativa com a mensagem de erro; as duas chamadas ficam registradas.
 2. A trava de escopo (`agent/scope.py`) valida a proposta e monta o comando. Host e porta vêm da configuração; o modelo escolhe só caminho, método, cabeçalhos, corpo e flags de uma lista permitida.
-3. O grupo decide: **[a]utorizar**, **[m]odificar** (troca ferramenta ou parâmetros), **[r]ejeitar** ou **[f]inalizar**, sempre com justificativa. Proposta bloqueada pela trava não pode ser autorizada.
+3. O grupo marca se a proposta é **igual**, **diferente** ou **nova** em relação ao plano 3.1 (ou não se aplica) e decide: **[a]utorizar**, **[m]odificar** (troca ferramenta ou parâmetros), **[r]ejeitar** ou **[f]inalizar**, sempre com justificativa. Proposta bloqueada pela trava não pode ser autorizada.
 4. A ferramenta roda no container `kali` (`docker exec`, sem shell). A saída completa vai para `logs/raw/`; um resumo truncado volta ao modelo.
-5. O modelo interpreta o resultado e propõe o próximo passo. O grupo registra a decisão após o resultado, uma nova hipótese (se houver) e tags.
+5. O modelo interpreta o resultado e propõe o próximo passo. O grupo vê a interpretação **e o que mudou na lista de fatos do modelo** (o que entrou e o que saiu), e registra a decisão após o resultado, uma nova hipótese (se houver) e tags.
+
+Tags aceitas (lista fixa, para as contagens não se fragmentarem): `boa_sugestao`, `alucinacao`, `interpretacao_errada`, `sem_base_no_resultado`, `repeticao`, `acao_desnecessaria`, `fora_escopo`, `json_invalido`, `falha_ia`.
 6. Rejeições e modificações voltam ao modelo com o motivo, no turno seguinte.
 
 | Ferramenta | Por baixo | Limites |
@@ -131,7 +133,7 @@ Configuração em `agent/config.example.toml` (modelo, temperatura 0.2, seed 42,
 
 | Arquivo | Conteúdo |
 |---|---|
-| `logs/investigacao_<id>.jsonl` | Um registro por turno: proposta, justificativa do modelo, bloqueio de escopo, decisão e motivo, parâmetros e comando executados, resumo e SHA-256 da saída, interpretação do modelo, decisão do grupo após o resultado, nova hipótese, tags. Também o restore e o encerramento |
+| `logs/investigacao_<id>.jsonl` | Um registro por turno: proposta, justificativa do modelo, fatos do modelo (lista e mudanças), relação com o plano do grupo, bloqueio de escopo, decisão e motivo, parâmetros e comando executados, resumo e SHA-256 da saída, interpretação do modelo, decisão do grupo após o resultado, nova hipótese, tags. Também o restore e o encerramento. O registro de início traz a versão do código (commit, alterações não commitadas e SHA-256 de cada arquivo do agente) |
 | `logs/modelo_<id>.jsonl` | Cada chamada ao modelo: mensagens enviadas, resposta bruta, validação, tempos |
 | `logs/raw/` | Saída completa de cada ferramenta |
 | `logs/teste_escopo.jsonl` | Teste negativo da trava de escopo |
@@ -142,9 +144,25 @@ Configuração em `agent/config.example.toml` (modelo, temperatura 0.2, seed 42,
 ```bash
 python3 -m unittest discover -s agent/tests -v   # testes da trava de escopo e da validação
 python3 agent/teste_escopo.py                    # teste negativo documentado
-python3 agent/revisar_plano.py                   # Fase 3.2, depois do commit do plano do grupo
-python3 agent/summarize_logs.py I1 I2 I3         # métricas (relatorio/metricas.md) e transcrições
+python3 agent/revisar_plano.py                   # Fase 3.2: exige o plano commitado, sem alterações e no remoto
+python3 agent/summarize_logs.py I1 I2 I3         # métricas, transcrições e conferência dos SHA-256 das saídas
 ```
+
+### Depois de cada investigação
+
+Os logs só existem no servidor até serem commitados. Logo ao terminar, no servidor:
+
+```bash
+python3 agent/summarize_logs.py <id>    # deve terminar com "OK" na integridade
+```
+
+E commit + push de `logs/` (direto do servidor, ou trazendo os arquivos para o notebook sem alterá-los):
+
+```bash
+git add logs/ && git commit -m "Logs da investigação <id>" && git push
+```
+
+O horário do push no GitHub fica como âncora de que os logs não foram alterados depois.
 
 ## Acesso manual ao alvo
 
