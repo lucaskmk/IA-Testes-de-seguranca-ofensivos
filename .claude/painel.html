@@ -1,0 +1,1024 @@
+<meta charset="utf-8">
+<title>Painel da AF</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  :root {
+    --bg: #f6f6f3;
+    --surface: #ffffff;
+    --surface-2: #f0f0ec;
+    --text: #1c1d1f;
+    --muted: #5d6166;
+    --border: #dcdcd6;
+    --accent: #2f5bd3;
+    --accent-soft: #e7edfc;
+    --ok: #1d7f47;
+    --ok-soft: #e3f3ea;
+    --warn: #a86400;
+    --warn-soft: #fbf0dc;
+    --bad: #b93a2e;
+    --bad-soft: #fbe6e3;
+    --line: #8a8f96;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141517;
+      --surface: #1d1f22;
+      --surface-2: #25282c;
+      --text: #e8e8e6;
+      --muted: #a2a6ab;
+      --border: #34373c;
+      --accent: #7f9ff0;
+      --accent-soft: #1f2a46;
+      --ok: #5cc28a;
+      --ok-soft: #173326;
+      --warn: #e2a64a;
+      --warn-soft: #3a2c14;
+      --bad: #ee7b6f;
+      --bad-soft: #3d1d1a;
+      --line: #7b8088;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141517;
+    --surface: #1d1f22;
+    --surface-2: #25282c;
+    --text: #e8e8e6;
+    --muted: #a2a6ab;
+    --border: #34373c;
+    --accent: #7f9ff0;
+    --accent-soft: #1f2a46;
+    --ok: #5cc28a;
+    --ok-soft: #173326;
+    --warn: #e2a64a;
+    --warn-soft: #3a2c14;
+    --bad: #ee7b6f;
+    --bad-soft: #3d1d1a;
+    --line: #7b8088;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+  }
+  header.top {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+  }
+  .top-inner {
+    max-width: 1080px; margin: 0 auto; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: flex; gap: 16px; align-items: center;
+  }
+  .brand { font-weight: 650; white-space: nowrap; }
+  nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  nav::-webkit-scrollbar { display: none; }
+  nav a {
+    color: var(--muted); text-decoration: none; font-size: 13.5px;
+    padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  nav a:hover { background: var(--surface-2); color: var(--text); }
+
+  main { max-width: 1080px; margin: 0 auto; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  section { margin-top: 40px; }
+  h1 { font-size: 26px; margin: 8px 0 4px; letter-spacing: -0.01em; }
+  h2 { font-size: 19px; margin: 0 0 4px; }
+  h3 { font-size: 15px; margin: 0 0 6px; }
+  p.lead { color: var(--muted); margin: 0 0 16px; max-width: 760px; }
+  .sub { color: var(--muted); font-size: 13.5px; margin: 0 0 14px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  .grid { display: grid; gap: 12px; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+  .note {
+    border-left: 3px solid var(--warn); background: var(--warn-soft);
+    padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 14px;
+  }
+  .note.ok { border-color: var(--ok); background: var(--ok-soft); }
+
+  /* rubrica */
+  .rub-row { display: grid; grid-template-columns: minmax(0, 1fr) 48px; gap: 4px 10px; align-items: center; margin: 10px 0; }
+  .rub-name { font-size: 14px; }
+  .rub-pct { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .rub-bar { grid-column: 1 / -1; height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .rub-bar span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .rub-bar span.done { background: var(--ok); }
+  .rub-prog { grid-column: 1 / -1; font-size: 12px; color: var(--muted); margin-top: -2px; }
+
+  .score {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 12px 16px; border-radius: 10px; background: var(--accent-soft); margin-bottom: 8px;
+  }
+  .score b { font-size: 28px; font-variant-numeric: tabular-nums; }
+
+  /* diagramas */
+  .diagram { overflow-x: auto; }
+  .diagram svg { display: block; width: 100%; min-width: 680px; height: auto; }
+  svg text { font-family: inherit; }
+  .n { fill: var(--surface); stroke: var(--border); stroke-width: 1.2; }
+  .n-acc { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+  .n-warn { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.4; }
+  .n-ok { fill: var(--ok-soft); stroke: var(--ok); stroke-width: 1.4; }
+  .n-bad { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.4; }
+  .n-box { fill: none; stroke: var(--line); stroke-width: 1.2; stroke-dasharray: 5 4; }
+  .t { fill: var(--text); font-size: 13px; font-weight: 600; }
+  .ts { fill: var(--muted); font-size: 11px; }
+  .tl { fill: var(--muted); font-size: 11px; font-style: italic; }
+  .e { fill: none; stroke: var(--line); stroke-width: 1.5; }
+  .e-dash { fill: none; stroke: var(--line); stroke-width: 1.4; stroke-dasharray: 4 4; }
+  .ah { fill: var(--line); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1.4px solid; }
+  .lg-acc { background: var(--accent-soft); border-color: var(--accent) !important; }
+  .lg-warn { background: var(--warn-soft); border-color: var(--warn) !important; }
+  .lg-ok { background: var(--ok-soft); border-color: var(--ok) !important; }
+
+  /* tabelas */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface-2); font-weight: 600; font-size: 13px; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  td.k { font-weight: 600; white-space: nowrap; }
+
+  .pill { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+  .p-ok { background: var(--ok-soft); color: var(--ok); }
+  .p-warn { background: var(--warn-soft); color: var(--warn); }
+  .p-bad { background: var(--bad-soft); color: var(--bad); }
+
+  /* linhas de raciocínio */
+  .opt { position: relative; }
+  .opt.pick { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .opt .tag { position: static; display: inline-block; margin-bottom: 8px; }
+  .opt ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; }
+  .opt li { margin: 3px 0; }
+
+  /* checklist */
+  details.ck { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; }
+  details.ck summary {
+    list-style: none; cursor: pointer; padding: 12px 16px;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center;
+  }
+  details.ck summary::-webkit-details-marker { display: none; }
+  .ck-title { font-weight: 600; }
+  .ck-count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ck-bar { grid-column: 1 / -1; height: 5px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .ck-bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+  .ck-items { padding: 0 16px 12px; }
+  .ck-items label { display: flex; gap: 10px; padding: 7px 0; border-top: 1px solid var(--border); font-size: 14px; cursor: pointer; }
+  .ck-items input { margin-top: 3px; accent-color: var(--accent); flex: none; }
+  .ck-items label.done span { color: var(--muted); text-decoration: line-through; }
+  .ck-items small { display: block; color: var(--muted); font-size: 12.5px; text-decoration: none; }
+  .btn {
+    font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+  }
+  .btn:hover { background: var(--surface-2); }
+
+  /* cronograma */
+  .tl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .wk h3 { display: flex; justify-content: space-between; }
+  .wk ul { margin: 6px 0 0; padding-left: 18px; font-size: 14px; }
+  .wk .out { margin-top: 10px; font-size: 13px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 8px; }
+
+  /* o que foi feito */
+  .done-card h3 { display: flex; gap: 8px; align-items: center; }
+  .done-card p { margin: 6px 0 0; font-size: 14px; }
+  .done-card ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; }
+  .done-card li { margin: 3px 0; }
+  .path { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+  /* roteiro */
+  .tlbar { display: flex; height: 44px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin: 6px 0 4px; }
+  .tlbar div {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-size: 11px; line-height: 1.15; padding: 0 3px; overflow: hidden;
+    border-right: 1px solid var(--bg); color: var(--text);
+  }
+  .tlbar div:last-child { border-right: 0; }
+  .s-ctx { background: var(--surface-2); }
+  .s-demo { background: var(--accent-soft); }
+  .s-ana { background: var(--ok-soft); }
+  .s-gap { background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 5px, var(--surface-2) 5px, var(--surface-2) 10px); color: var(--muted) !important; }
+  .tlscale { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  td.tm { white-space: nowrap; font-variant-numeric: tabular-nums; font-weight: 600; }
+  td.demo { border-left: 3px solid var(--accent); }
+  .ph { background: var(--warn-soft); color: var(--warn); padding: 0 4px; border-radius: 4px; font-size: 0.93em; }
+  .crit { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .rot table { min-width: 860px; table-layout: fixed; }
+  .rot col.c1 { width: 96px; } .rot col.c2 { width: 150px; } .rot col.c3 { width: 150px; } .rot col.c5 { width: 120px; }
+
+  footer { color: var(--muted); font-size: 12.5px; margin-top: 48px; }
+  code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 0.92em; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; }
+
+  @media (max-width: 560px) {
+    .brand { display: none; }
+    h1 { font-size: 22px; }
+  }
+
+  /* agora */
+  .now { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 12px; margin-top: 16px; }
+  @media (max-width: 760px) { .now { grid-template-columns: minmax(0, 1fr); } }
+  .now-main { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 12px; padding: 16px; min-width: 0; }
+  .now-main .eyebrow { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 650; }
+  .now-main h2 { font-size: 21px; margin: 4px 0 8px; text-wrap: balance; }
+  .now-main ol { margin: 8px 0 0; padding-left: 20px; font-size: 14px; }
+  .now-main li { margin: 4px 0; }
+  .areas { display: grid; gap: 8px; min-width: 0; }
+  .area { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .area b { font-size: 14px; }
+  .area small { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
+
+  /* caminho */
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .step { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 0; border-top: 1px solid var(--border); }
+  .step:first-child { border-top: 0; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; border: 1.5px solid var(--line); color: var(--muted); background: var(--surface); }
+  .step.ok .dot { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+  .step.now-step .dot { background: var(--warn); border-color: var(--warn); color: var(--surface); }
+  .step .what { font-size: 14px; min-width: 0; }
+  .step .what small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .step.ok .what > span { color: var(--muted); }
+  .who { font-size: 11.5px; font-weight: 650; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+  .who.dupla { background: var(--warn-soft); color: var(--warn); }
+  .who.apoio { background: var(--accent-soft); color: var(--accent); }
+  .who.ambos { background: var(--surface-2); color: var(--muted); }
+
+  /* linha do tempo */
+  .tl { display: grid; gap: 14px; }
+  .tl-day { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 560px) { .tl-day { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+  .tl-date { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tl-date small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+  .tl-list { margin: 0; padding: 0; list-style: none; border-left: 2px solid var(--border); }
+  .tl-list li { position: relative; padding: 0 0 10px 14px; font-size: 14px; }
+  .tl-list li::before { content: ""; position: absolute; left: -6px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--ok); }
+  .tl-list li small { display: block; color: var(--muted); font-size: 12.5px; }
+
+  /* escolhas */
+  .dec { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  @media (max-width: 400px) { .dec { grid-template-columns: minmax(0, 1fr); } }
+  .dec .card { min-width: 0; }
+  .dec h3 { font-size: 15px; margin: 0 0 6px; text-wrap: balance; }
+  .dec dl { margin: 0; display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 4px 10px; font-size: 13.5px; }
+  .dec dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; padding-top: 2px; }
+  .dec dd { margin: 0; min-width: 0; }
+  .tag-crit { display: inline-block; font-size: 11.5px; color: var(--muted); border: 1px solid var(--border); border-radius: 99px; padding: 1px 8px; margin-top: 8px; }
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <span class="brand">AF · Tecnologias Hackers</span>
+    <nav>
+      <a href="#agora">Agora</a>
+      <a href="#caminho">Caminho</a>
+      <a href="#feito">O que foi feito</a>
+      <a href="#escolhas">Nossas escolhas</a>
+      <a href="#rubrica">Rubrica</a>
+      <a href="#checklist">Checklist</a>
+      <a href="#arquitetura">Arquitetura</a>
+      <a href="#ciclo">Ciclo</a>
+      <a href="#raciocinio">Raciocínio 3.1</a>
+      <a href="#roteiro">Vídeo</a>
+      <a href="#riscos">Riscos</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1 id="agora">Painel da AF</h1>
+  <p class="lead">Agente supervisionado com LLM local (<code>qwen3:4b</code> via Ollama) investigando o OWASP Juice Shop no kit do laboratório. O objetivo é mostrar, com evidência, onde a IA ajuda, onde falha e onde a decisão humana é indispensável.</p>
+
+  <div class="now">
+    <div class="now-main">
+      <div class="eyebrow">Agora · atualizado em 04/11/2026</div>
+      <h2>Laboratório e agente prontos. Próximo passo: Fase 3.1, feita pela dupla sem IA.</h2>
+      <ol>
+        <li>Conectar a VPN e abrir o Juice Shop pelo túnel SSH (roteiro na seção 8 do guia da Fase 3.1)</li>
+        <li>Explorar a aplicação e preencher <code>planejamento/observacoes_iniciais.md</code></li>
+        <li>Preencher <code>planejamento/plano_testes_grupo.md</code>, sem nenhuma IA aberta</li>
+        <li>Commit e push; anotar o hash e o horário</li>
+      </ol>
+    </div>
+    <div class="areas">
+      <div class="score" style="margin:0"><b id="score-top">0%</b><span class="sub" style="margin:0">da rubrica coberta pelo checklist</span></div>
+      <div class="area"><b>Laboratório · 15%</b><span class="pill p-ok">pronto</span><small>Isolado em 3 camadas; 4 testes de isolamento e restore salvos</small></div>
+      <div class="area"><b>Agente · 20%</b><span class="pill p-ok">pronto</span><small>Falta exercitar modificar/rejeitar numa sessão real</small></div>
+      <div class="area"><b>Planejamento · 20%</b><span class="pill p-warn">com a dupla</span><small>Fase 3.1 sem IA, depois a revisão 3.2</small></div>
+      <div class="area"><b>Evidências e análise · 40%</b><span class="pill p-bad">não iniciado</span><small>Depende do plano e das 3 investigações</small></div>
+    </div>
+  </div>
+
+  <!-- CAMINHO -->
+  <section id="caminho">
+    <h2>Caminho até a entrega</h2>
+    <p class="sub">Os 17 passos do plano, na ordem. <span class="who dupla">dupla</span> só vocês podem fazer · <span class="who apoio">apoio</span> preparado no repositório ou no servidor e revisado por vocês.</p>
+    <div class="card">
+      <ol class="steps">
+        <li class="step ok"><span class="dot">✓</span><div class="what"><span>Decisões iniciais e acesso ao kit</span><small>Topologia do Roteiro 1; VPN + SSH por chave</small></div><span class="who ambos">feito</span></li>
+        <li class="step ok"><span class="dot">✓</span><div class="what"><span>Remoto no GitHub</span><small>lucaskmk/IA-Testes-de-seguranca-ofensivos · 5 commits</small></div><span class="who ambos">feito</span></li>
+        <li class="step ok"><span class="dot">✓</span><div class="what"><span>Laboratório: Ollama, Juice Shop, Kali, scripts e README</span><small>install.sh, restore.sh, check_env.sh, ollama.sh</small></div><span class="who ambos">feito</span></li>
+        <li class="step ok"><span class="dot">✓</span><div class="what"><span>Isolamento completo</span><small>Regra do ufw; check_env com 0 falhas; testes com e sem VPN</small></div><span class="who ambos">feito</span></li>
+        <li class="step ok"><span class="dot">✓</span><div class="what"><span>Agente, testes e teste de fumaça</span><small>25 testes de unidade, 14/14 casos de escopo, ponta a ponta com objetivo neutro</small></div><span class="who ambos">feito</span></li>
+        <li class="step now-step"><span class="dot">6</span><div class="what"><span><b>Fase 3.1: observações e plano de testes, sem IA</b></span><small>Commit + push antes de qualquer revisão. Bloqueia todos os passos seguintes</small></div><span class="who dupla">dupla</span></li>
+        <li class="step"><span class="dot">7</span><div class="what"><span>Pergunta ao professor (IA externa, Kali em container), data de entrega, decisão sobre o Apache do Roteiro 1</span><small>Em paralelo ao passo 6</small></div><span class="who dupla">dupla</span></li>
+        <li class="step"><span class="dot">8</span><div class="what"><span>Revisão 3.2 pelo modelo e tabela aceita/modificada/rejeitada</span><small>revisar_plano.py gera a tabela; a justificativa técnica é de vocês</small></div><span class="who ambos">ambos</span></li>
+        <li class="step"><span class="dot">9</span><div class="what"><span>Piloto P0 e ajuste de prompt e ferramentas</span><small>Mudanças registradas</small></div><span class="who ambos">ambos</span></li>
+        <li class="step"><span class="dot">10</span><div class="what"><span>Investigações I1, I2, I3 + execução dupla do mesmo objetivo</span><small>Restore antes de cada uma; decisões A/M/R/F de vocês, no terminal ou pelo chat</small></div><span class="who dupla">dupla</span></li>
+        <li class="step"><span class="dot">11</span><div class="what"><span>Métricas e transcrições a partir dos logs</span><small>summarize_logs.py → relatorio/metricas.md</small></div><span class="who apoio">apoio</span></li>
+        <li class="step"><span class="dot">12</span><div class="what"><span>Os 6 itens de cada investigação e a análise crítica</span><small>Esqueleto em rascunhos/analise_critica_esqueleto.md</small></div><span class="who dupla">dupla</span></li>
+        <li class="step"><span class="dot">13</span><div class="what"><span>Relatório de 4 a 6 páginas</span><small>Rascunho da seção de arquitetura em rascunhos/; revisão de forma</small></div><span class="who ambos">ambos</span></li>
+        <li class="step"><span class="dot">14</span><div class="what"><span>Vídeo de até 10 min com uma investigação completa</span><small>Roteiro mais abaixo</small></div><span class="who dupla">dupla</span></li>
+        <li class="step"><span class="dot">15</span><div class="what"><span>Revisão final pelo checklist</span><small>README reproduzido pelo Raphael no kit</small></div><span class="who ambos">ambos</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- LINHA DO TEMPO -->
+  <section id="feito">
+    <h2>O que foi feito</h2>
+    <p class="sub">Tudo com evidência no repositório. Os horários estão em Brasília.</p>
+    <div class="card tl">
+      <div class="tl-day">
+        <div class="tl-date">29/10<small>quarta</small></div>
+        <ul class="tl-list">
+          <li>Plano revisado contra o PDF e o relatório do Roteiro 1<small>.claude/plano_projeto.md</small></li>
+          <li>Acesso ao servidor pela VPN do grupo + SSH com chave dedicada</li>
+          <li>Juice Shop v20.3.0 e Kali fixados por digest na rede interna <code>labnet</code><small>lab/docker-compose.yml · lab/kali/Dockerfile</small></li>
+          <li>Ollama v0.40.13 + qwen3:4b, sem sudo e só em loopback<small>lab/install.sh · lab/ollama.sh</small></li>
+          <li>Restore validado 2×: HTTP 200 em 3 s, 0 desafios resolvidos<small>lab/evidencias/restore_*.txt</small></li>
+          <li>Agente completo: 4 ferramentas, trava de escopo, loop A/M/R/F, log JSONL, métricas, revisão 3.2<small>agent/</small></li>
+          <li>25 testes de unidade e teste negativo de escopo 14/14<small>logs/teste_escopo.jsonl</small></li>
+          <li>Teste de fumaça de ponta a ponta, com 28 a 42 s por chamada ao modelo<small>logs/investigacao_T0_fumaca.jsonl</small></li>
+          <li>Commit inicial com 38 arquivos<small>1900c99</small></li>
+        </ul>
+      </div>
+      <div class="tl-day">
+        <div class="tl-date">04/11<small>quarta</small></div>
+        <ul class="tl-list">
+          <li><code>ufw</code> estava desativado; ativado com bloqueio da labnet + OpenSSH<small>Efeito colateral: Apache do Roteiro 1 fechado para a rede</small></li>
+          <li>check_env com 0 falhas<small>lab/evidencias/check_env_20261104_1538.txt · 9c15703</small></li>
+          <li>Teste de isolamento sem VPN: nada do laboratório responde de fora<small>lab/evidencias/isolamento_sem_vpn_*.txt · aef304f</small></li>
+          <li>Repositório enviado ao GitHub<small>github.com/lucaskmk/IA-Testes-de-seguranca-ofensivos</small></li>
+          <li>Roteiro prático da Fase 3.1 e rascunhos locais (arquitetura do relatório, esqueleto da análise crítica)<small>.claude/guia_raciocinio_fase31.md · rascunhos/</small></li>
+          <li>Contexto do projeto versionado em <code>.claude/</code> (CLAUDE.md, plano, guia e este painel) para continuar de outro computador</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESCOLHAS -->
+  <section id="escolhas">
+    <h2>Nossas escolhas</h2>
+    <p class="sub">Cada decisão de projeto, o que descartamos e por quê. Isto alimenta a seção de arquitetura do relatório e as perguntas da apresentação.</p>
+    <div class="dec">
+      <div class="card"><h3>Kali em container no próprio servidor</h3><dl>
+        <dt>Descartado</dt><dd>Ferramentas via apt no Ubuntu; VM Kali no notebook</dd>
+        <dt>Por quê</dt><dd>O PDF pede o Juice Shop "acessível a partir do Kali" e tudo no kit. A VM no notebook sairia do kit; sem Kali, não cumpriríamos o texto</dd>
+        <dt>Evidência</dt><dd>check_env: o kali alcança juiceshop:3000</dd></dl><span class="tag-crit">Laboratório 15%</span></div>
+      <div class="card"><h3>Escopo em três camadas</h3><dl>
+        <dt>Descartado</dt><dd>Limitar o escopo só pelo prompt</dd>
+        <dt>Por quê</dt><dd>Código (allowlist), rede (labnet interna + ufw) e perímetro (pfSense + VPN): se uma camada falhar, as outras seguram</dd>
+        <dt>Evidência</dt><dd>teste_escopo 14/14 · check_env 0 falhas · teste sem VPN</dd></dl><span class="tag-crit">Agente 20% · Lab 15%</span></div>
+      <div class="card"><h3>Rede Docker interna em vez de firewall manual</h3><dl>
+        <dt>Descartado</dt><dd>Regras iptables em DOCKER-USER; desligar a internet do servidor</dd>
+        <dt>Por quê</dt><dd><code>internal: true</code> remove a rota de saída sem sudo e sem cortar o acesso do grupo. Só sobrou o gateway, fechado com uma regra do ufw</dd>
+        <dt>Evidência</dt><dd>Testado: sem a regra, SSH e Apache eram alcançáveis</dd></dl><span class="tag-crit">Laboratório 15%</span></div>
+      <div class="card"><h3>O agente recebe só o objetivo</h3><dl>
+        <dt>Descartado</dt><dd>Entregar a hipótese e a estratégia do grupo</dd>
+        <dt>Por quê</dt><dd>Assim a "contribuição do agente" é dele e a comparação plano × agente vale</dd>
+        <dt>Evidência</dt><dd>Campo "objetivo" de cada log</dd></dl><span class="tag-crit">Análise crítica 20%</span></div>
+      <div class="card"><h3>Nenhuma proposta do agente antes do push do plano</h3><dl>
+        <dt>Descartado</dt><dd>Piloto em paralelo à Fase 3.1</dd>
+        <dt>Por quê</dt><dd>Ver propostas sobre os temas contaminaria o plano. O teste de fumaça usou um objetivo neutro</dd>
+        <dt>Evidência</dt><dd>Horário do push × primeiro log de investigação</dd></dl><span class="tag-crit">Planejamento 20%</span></div>
+      <div class="card"><h3>Python puro, sem framework de agentes</h3><dl>
+        <dt>Descartado</dt><dd>LangChain e similares</dd>
+        <dt>Por quê</dt><dd>Loop transparente e explicável por qualquer um da dupla; nada a instalar no servidor</dd>
+        <dt>Evidência</dt><dd>agent/agent.py</dd></dl><span class="tag-crit">Agente 20%</span></div>
+      <div class="card"><h3>Saída do modelo em JSON com schema e nova tentativa</h3><dl>
+        <dt>Descartado</dt><dd>Texto livre interpretado por regex</dd>
+        <dt>Por quê</dt><dd>Um modelo de 4B erra o formato; o erro vira uma nova tentativa registrada e material da análise</dd>
+        <dt>Evidência</dt><dd>logs/modelo_&lt;id&gt;.jsonl (json_valido, erros)</dd></dl><span class="tag-crit">Agente 20%</span></div>
+      <div class="card"><h3>Justificativa obrigatória em toda decisão</h3><dl>
+        <dt>Descartado</dt><dd>Justificar só modificar e rejeitar</dd>
+        <dt>Por quê</dt><dd>Mostra a supervisão também quando autorizamos, o que reforça a "intervenção humana"</dd>
+        <dt>Evidência</dt><dd>Campo motivo_decisao</dd></dl><span class="tag-crit">Evidências 20%</span></div>
+      <div class="card"><h3>Log por turno + resposta bruta + saída completa com hash</h3><dl>
+        <dt>Descartado</dt><dd>Um JSON único gravado no fim</dd>
+        <dt>Por quê</dt><dd>Nada se perde se a VPN cair; cada conclusão aponta para um turno e cada saída pode ser verificada</dd>
+        <dt>Evidência</dt><dd>SHA-256 do teste de fumaça conferido</dd></dl><span class="tag-crit">Evidências 20%</span></div>
+      <div class="card"><h3>Reprodutibilidade fixada</h3><dl>
+        <dt>Descartado</dt><dd>Tag latest e parâmetros padrão</dd>
+        <dt>Por quê</dt><dd>Juice Shop e Kali por digest; temperatura 0,2, seed 42, thinking desligado, num_ctx 8192</dd>
+        <dt>Evidência</dt><dd>README · campo config de cada log</dd></dl><span class="tag-crit">Laboratório 15%</span></div>
+      <div class="card"><h3>Ollama sem sudo e só em loopback</h3><dl>
+        <dt>Descartado</dt><dd>Instalador oficial como serviço; OLLAMA_HOST=0.0.0.0</dd>
+        <dt>Por quê</dt><dd>Instalável por qualquer usuário do grupo docker; o Ollama não tem autenticação</dd>
+        <dt>Evidência</dt><dd>check_env: escuta só em 127.0.0.1</dd></dl><span class="tag-crit">Laboratório 15%</span></div>
+      <div class="card"><h3>Rascunhos fora do repositório</h3><dl>
+        <dt>Descartado</dt><dd>Versionar rascunhos de plano e análise</dd>
+        <dt>Por quê</dt><dd>Só entra no repositório o que a dupla revisou e assumiu. A Fase 3.1 não tem rascunho: é escrita do zero pela dupla</dd>
+        <dt>Evidência</dt><dd>rascunhos/ em .git/info/exclude</dd></dl><span class="tag-crit">Planejamento 20%</span></div>
+    </div>
+  </section>
+
+  <!-- ROTEIRO -->
+  <section id="roteiro">
+    <h2>Roteiro do vídeo · até 10 min</h2>
+    <p class="sub">Duração planejada de 9:20, com 40 s de folga. A demonstração ocupa quase metade do tempo, porque o PDF exige uma investigação completa, da hipótese à conclusão.</p>
+    <div class="card">
+      <div class="tlbar" role="img" aria-label="Linha do tempo do vídeo">
+        <div class="s-ctx" style="flex:20" title="Abertura · 20 s">Início</div>
+        <div class="s-ctx" style="flex:40" title="Objetivo e regras · 40 s">Objetivo</div>
+        <div class="s-ctx" style="flex:70" title="Arquitetura · 70 s">Arquitetura</div>
+        <div class="s-ctx" style="flex:60" title="Planejamento · 60 s">Plano 3.1 × 3.2</div>
+        <div class="s-demo" style="flex:240" title="Demonstração · 240 s">Demonstração: investigação completa</div>
+        <div class="s-ana" style="flex:30" title="Outras investigações · 30 s">Outras</div>
+        <div class="s-ana" style="flex:75" title="Análise crítica · 75 s">Análise crítica</div>
+        <div class="s-ana" style="flex:25" title="Conclusão · 25 s">Fim</div>
+        <div class="s-gap" style="flex:40" title="Folga · 40 s">folga</div>
+      </div>
+      <div class="tlscale"><span>0:00</span><span>2:30</span><span>5:00</span><span>7:30</span><span>10:00</span></div>
+      <div class="legend">
+        <span><i class="lg-acc"></i>demonstração do agente</span>
+        <span><i class="lg-ok"></i>análise e resultados</span>
+        <span><i style="background:var(--surface-2);border-color:var(--border)"></i>contexto</span>
+      </div>
+    </div>
+
+    <div class="tbl-wrap rot" style="margin-top:12px">
+      <table>
+        <colgroup><col class="c1"><col class="c2"><col class="c3"><col><col class="c5"></colgroup>
+        <tr><th>Tempo</th><th>Bloco</th><th>Na tela</th><th>O que dizer / mostrar</th><th>Critério</th></tr>
+        <tr><td class="tm">0:00–0:20</td><td class="k">Abertura</td><td>Título + nomes</td><td>Quem somos e a pergunta do trabalho: onde um LLM local ajuda numa investigação de segurança, onde falha e onde a decisão humana é indispensável.</td><td class="crit">Doc 5%</td></tr>
+        <tr><td class="tm">0:20–1:00</td><td class="k">Objetivo e regras</td><td>Slide com os limites</td><td>Ambiente controlado; alvo único (Juice Shop local); agente sem shell livre; sugestão do modelo não é evidência; a nota não depende do número de falhas.</td><td class="crit">Lab 15%</td></tr>
+        <tr><td class="tm">1:00–2:10</td><td class="k">Arquitetura</td><td>Diagrama de arquitetura + ciclo</td><td>Componentes: Ollama + <code>qwen3:4b</code>, ferramentas controladas, trava de escopo, loop A/M/R/F, resumo da saída, logger. Mostrar rapidamente o reset do laboratório.</td><td class="crit">Agente 20% · Lab 15%</td></tr>
+        <tr><td class="tm">2:10–3:10</td><td class="k">Planejamento</td><td>Matriz 3.1 + tabela 3.2</td><td>Plano feito sem IA (citar o commit e o push <span class="ph">[hash e horário]</span>). O que o modelo sugeriu na revisão e um exemplo de sugestão aceita e um de rejeitada, com o porquê <span class="ph">[da tabela real]</span>.</td><td class="crit">Planejamento 20%</td></tr>
+        <tr><td class="tm demo">3:10–3:40</td><td class="k">Demo · hipótese</td><td>Plano da investigação escolhida</td><td>Hipótese inicial e estratégia do grupo <span class="ph">[investigação X]</span>. Juice Shop recém-resetado.</td><td class="crit">Evidências 20%</td></tr>
+        <tr><td class="tm demo">3:40–4:20</td><td class="k">Demo · 1ª proposta</td><td>Terminal do agente</td><td>Entrada do ID e do objetivo (sem a hipótese do grupo, para a contribuição ser do agente). Primeira proposta em JSON: explicar cada campo (justificativa, ferramenta, parâmetros).</td><td class="crit">Agente 20%</td></tr>
+        <tr><td class="tm demo">4:20–5:00</td><td class="k">Demo · executar</td><td>Terminal</td><td>[A] Autorizar; resultado resumido; interpretação do modelo. Dizer se a interpretação está correta <span class="ph">[anotação do grupo]</span>.</td><td class="crit">Evidências 20%</td></tr>
+        <tr><td class="tm demo">5:00–5:30</td><td class="k">Demo · adaptação</td><td>Terminal (destacar)</td><td>Mostrar o turno em que o resultado anterior mudou a proposta seguinte: prova de que não é sequência fixa <span class="ph">[turno N → N+1]</span>.</td><td class="crit">Agente 20%</td></tr>
+        <tr><td class="tm demo">5:30–6:10</td><td class="k">Demo · intervenção</td><td>Terminal</td><td>[M] Modificar ou [R] Rejeitar com justificativa técnica; o que o modelo fez com o feedback <span class="ph">[turno real]</span>.</td><td class="crit">Crítica 20%</td></tr>
+        <tr><td class="tm demo">6:10–6:50</td><td class="k">Demo · conclusão</td><td>Log JSON aberto</td><td>[F] Finalizar. Conclusão: confirmada, refutada ou inconclusiva, e mostrar no log o turno que sustenta a conclusão.</td><td class="crit">Evidências 20%</td></tr>
+        <tr><td class="tm demo">6:50–7:10</td><td class="k">Demo · resumo</td><td>Slide dos 6 itens</td><td>Hipótese, estratégia, contribuição do agente, execução, intervenção humana e conclusão desta investigação.</td><td class="crit">Evidências 20%</td></tr>
+        <tr><td class="tm">7:10–7:40</td><td class="k">Outras investigações</td><td>Tabela-resumo</td><td>Uma linha para cada uma das outras duas: hipótese, conclusão e principal intervenção <span class="ph">[dos logs]</span>.</td><td class="crit">Evidências 20%</td></tr>
+        <tr><td class="tm">7:40–8:55</td><td class="k">Análise crítica</td><td>Métricas + estudo de caso</td><td>Números (% A/M/R, JSON inválido, repetições). Estudo de caso de falha: o que o modelo fez → como percebemos → o que fizemos. Previsão do grupo × o que aconteceu <span class="ph">[preencher]</span>.</td><td class="crit">Crítica 20%</td></tr>
+        <tr><td class="tm">8:55–9:20</td><td class="k">Conclusão</td><td>Slide final</td><td>Onde a IA ajudou, onde falhou, limitações do modelo e da integração e o que mudaríamos.</td><td class="crit">Crítica 20%</td></tr>
+      </table>
+    </div>
+
+    <div class="grid g2" style="margin-top:12px">
+      <div class="card">
+        <h3>Antes de gravar</h3>
+        <ul style="margin:6px 0 0;padding-left:18px;font-size:14px">
+          <li>Resetar o Juice Shop e anotar o horário</li>
+          <li>Carregar o modelo antes (a primeira chamada ao Ollama é lenta)</li>
+          <li>Aumentar a fonte do terminal e fechar abas e notificações</li>
+          <li>Ter os arquivos de log e slides já abertos</li>
+          <li>Escolher para a demo a investigação que tem um M ou R claro</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Durante a gravação</h3>
+        <ul style="margin:6px 0 0;padding-left:18px;font-size:14px">
+          <li>Gravar a demo em take separado; editar as esperas do modelo e avisar no vídeo que houve corte</li>
+          <li>Cada integrante fala em pelo menos um bloco</li>
+          <li>Não ler slide; sempre apontar a evidência na tela</li>
+          <li>Cronometrar um ensaio completo: precisa ficar abaixo de 9:40</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RUBRICA -->
+  <section id="rubrica">
+    <h2>Rubrica e progresso</h2>
+    <p class="sub">O progresso de cada critério vem do checklist mais abaixo e fica salvo neste navegador.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="score"><b id="score">0%</b><span class="sub" style="margin:0">da rubrica coberta (ponderado pelo checklist)</span></div>
+        <div id="rubric"></div>
+      </div>
+      <div class="card">
+        <h3>O que mais pesa</h3>
+        <p class="sub" style="margin-bottom:8px">60% da nota depende da qualidade do processo, não do código.</p>
+        <div class="tbl-wrap" style="border:0">
+          <table>
+            <tr><th>Critério</th><th>Depende de</th></tr>
+            <tr><td>Planejamento</td><td>Plano feito antes da IA, hipóteses refutáveis, tabela A/M/R da revisão</td></tr>
+            <tr><td>Evidências</td><td>Toda conclusão citando <code>arquivo + turno</code> do log</td></tr>
+            <tr><td>Análise crítica</td><td>Métricas, estudo de caso de falha, comparação grupo × agente</td></tr>
+          </table>
+        </div>
+        <p class="sub" style="margin:12px 0 0">Não contam: número de vulnerabilidades e nível de autonomia do agente.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FASES -->
+  <section id="fases">
+    <h2>Fases e dependências</h2>
+    <p class="sub">Caminho crítico: F1 → F2 → F4 → F5 → F6 → F7. O agente (F3) é construído em paralelo e precisa estar pronto antes da revisão pelo LLM.</p>
+    <div class="card diagram">
+      <svg viewBox="0 0 920 300" role="img" aria-label="Diagrama das fases do projeto">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+        </defs>
+        <!-- linha 1 -->
+        <rect class="n" x="10" y="30" width="110" height="60" rx="9"/>
+        <text class="t" x="65" y="56" text-anchor="middle">F0</text>
+        <text class="ts" x="65" y="73" text-anchor="middle">Organização</text>
+
+        <rect class="n" x="145" y="30" width="130" height="60" rx="9"/>
+        <text class="t" x="210" y="56" text-anchor="middle">F1 Laboratório</text>
+        <text class="ts" x="210" y="73" text-anchor="middle">15% · reset · README</text>
+
+        <rect class="n-ok" x="300" y="30" width="210" height="60" rx="9"/>
+        <text class="t" x="405" y="56" text-anchor="middle">F2 Análise manual + 3.1</text>
+        <text class="ts" x="405" y="73" text-anchor="middle">sem IA · observações → hipóteses</text>
+
+        <rect class="n-warn" x="535" y="30" width="110" height="60" rx="9"/>
+        <text class="t" x="590" y="56" text-anchor="middle">commit + push</text>
+        <text class="ts" x="590" y="73" text-anchor="middle">prova de data</text>
+
+        <rect class="n-acc" x="670" y="30" width="170" height="60" rx="9"/>
+        <text class="t" x="755" y="56" text-anchor="middle">F4 Revisão (3.2)</text>
+        <text class="ts" x="755" y="73" text-anchor="middle">LLM sugere · A / M / R</text>
+
+        <path class="e" d="M120,60 H145" marker-end="url(#a1)"/>
+        <path class="e" d="M275,60 H300" marker-end="url(#a1)"/>
+        <path class="e" d="M510,60 H535" marker-end="url(#a1)"/>
+        <path class="e" d="M645,60 H670" marker-end="url(#a1)"/>
+
+        <!-- linha 2: agente -->
+        <rect class="n-acc" x="300" y="120" width="540" height="50" rx="9"/>
+        <text class="t" x="570" y="142" text-anchor="middle">F3 Agente supervisionado · 20%</text>
+        <text class="ts" x="570" y="159" text-anchor="middle">escopo · ferramentas · cliente LLM · loop A/M/R/F · logger · piloto</text>
+        <path class="e" d="M210,90 V145 H300" marker-end="url(#a1)"/>
+        <path class="e" d="M755,120 V90" marker-end="url(#a1)"/>
+
+        <!-- quebra de linha -->
+        <path class="e" d="M840,60 H895 V200 H65 V220" marker-end="url(#a1)"/>
+
+        <!-- linha 3 -->
+        <rect class="n-acc" x="10" y="220" width="230" height="60" rx="9"/>
+        <text class="t" x="125" y="246" text-anchor="middle">F5 Investigações 1 · 2 · 3</text>
+        <text class="ts" x="125" y="263" text-anchor="middle">20% · reset entre cada uma</text>
+
+        <rect class="n-acc" x="275" y="220" width="200" height="60" rx="9"/>
+        <text class="t" x="375" y="246" text-anchor="middle">F6 Análise crítica</text>
+        <text class="ts" x="375" y="263" text-anchor="middle">20% · métricas · caso de falha</text>
+
+        <rect class="n" x="510" y="220" width="200" height="60" rx="9"/>
+        <text class="t" x="610" y="246" text-anchor="middle">F7 Relatório + vídeo</text>
+        <text class="ts" x="610" y="263" text-anchor="middle">5% · 4–6 pág · ≤ 10 min</text>
+
+        <rect class="n" x="745" y="220" width="150" height="60" rx="9"/>
+        <text class="t" x="820" y="246" text-anchor="middle">F8 Revisão</text>
+        <text class="ts" x="820" y="263" text-anchor="middle">checklist da rubrica</text>
+
+        <path class="e" d="M240,250 H275" marker-end="url(#a1)"/>
+        <path class="e" d="M475,250 H510" marker-end="url(#a1)"/>
+        <path class="e" d="M710,250 H745" marker-end="url(#a1)"/>
+      </svg>
+      <div class="legend">
+        <span><i class="lg-ok"></i>feito pelo grupo, sem IA</span>
+        <span><i class="lg-acc"></i>envolve o agente / LLM</span>
+        <span><i class="lg-warn"></i>marco de controle</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ARQUITETURA -->
+  <section id="arquitetura">
+    <h2>Arquitetura do laboratório</h2>
+    <p class="sub">Tudo no Ubuntu Server 10.0.80.3, atrás do pfSense do Roteiro 1 (acesso do grupo só pela VPN). Toda ação passa pela decisão humana e por três camadas de escopo: allowlist no código, rede Docker <code>labnet</code> sem saída e perímetro do pfSense. O agente não tem shell livre.</p>
+    <div class="card diagram">
+      <svg viewBox="0 0 860 370" role="img" aria-label="Diagrama de arquitetura">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+        </defs>
+        <!-- operador -->
+        <rect class="n-ok" x="10" y="95" width="150" height="70" rx="9"/>
+        <text class="t" x="85" y="125" text-anchor="middle">Operador</text>
+        <text class="ts" x="85" y="143" text-anchor="middle">grupo · terminal</text>
+
+        <!-- agente -->
+        <rect class="n-box" x="220" y="20" width="360" height="300" rx="12"/>
+        <text class="t" x="400" y="42" text-anchor="middle">Agente supervisionado</text>
+
+        <rect class="n" x="240" y="55" width="320" height="40" rx="7"/>
+        <text class="t" x="400" y="80" text-anchor="middle">Cliente LLM · prompt + validação do JSON</text>
+
+        <rect class="n-acc" x="240" y="105" width="320" height="40" rx="7"/>
+        <text class="t" x="400" y="130" text-anchor="middle">Loop de supervisão · A / M / R / F</text>
+
+        <rect class="n" x="240" y="155" width="320" height="40" rx="7"/>
+        <text class="t" x="400" y="180" text-anchor="middle">Resumo e sanitização do resultado</text>
+
+        <rect class="n-warn" x="240" y="205" width="320" height="40" rx="7"/>
+        <text class="t" x="400" y="230" text-anchor="middle">Trava de escopo · host/porta permitidos</text>
+
+        <rect class="n" x="240" y="255" width="320" height="50" rx="7"/>
+        <text class="t" x="400" y="276" text-anchor="middle">Ferramentas no container Kali (≥ 2)</text>
+        <text class="ts" x="400" y="293" text-anchor="middle">curl · nmap · ffuf via docker exec</text>
+
+        <!-- externos ao agente -->
+        <rect class="n-acc" x="640" y="45" width="210" height="60" rx="9"/>
+        <text class="t" x="745" y="71" text-anchor="middle">Ollama · qwen3:4b</text>
+        <text class="ts" x="745" y="88" text-anchor="middle">127.0.0.1:11434 · digest registrado</text>
+
+        <rect class="n" x="640" y="150" width="210" height="60" rx="9"/>
+        <text class="t" x="745" y="176" text-anchor="middle">Logs</text>
+        <text class="ts" x="745" y="193" text-anchor="middle">investigacao_&lt;id&gt;.jsonl + raw/</text>
+
+        <rect class="n-bad" x="640" y="250" width="210" height="60" rx="9"/>
+        <text class="t" x="745" y="276" text-anchor="middle">OWASP Juice Shop</text>
+        <text class="ts" x="745" y="293" text-anchor="middle">labnet sem saída · digest fixo</text>
+
+        <rect class="n-box" x="660" y="328" width="170" height="34" rx="7"/>
+        <text class="ts" x="745" y="350" text-anchor="middle">reset → estado conhecido</text>
+
+        <!-- arestas -->
+        <path class="e" d="M160,125 H240" marker-start="url(#a2)" marker-end="url(#a2)"/>
+        <text class="tl" x="200" y="117" text-anchor="middle">decide</text>
+        <path class="e" d="M560,75 H640" marker-start="url(#a2)" marker-end="url(#a2)"/>
+        <text class="tl" x="600" y="67" text-anchor="middle">HTTP local</text>
+        <path class="e" d="M560,175 H640" marker-end="url(#a2)"/>
+        <text class="tl" x="600" y="167" text-anchor="middle">cada turno</text>
+        <path class="e" d="M560,280 H640" marker-start="url(#a2)" marker-end="url(#a2)"/>
+        <text class="tl" x="600" y="272" text-anchor="middle">só o alvo</text>
+        <path class="e-dash" d="M745,328 V310" marker-end="url(#a2)"/>
+      </svg>
+      <div class="legend">
+        <span><i class="lg-ok"></i>humano</span>
+        <span><i class="lg-acc"></i>decisão/modelo</span>
+        <span><i class="lg-warn"></i>controle de escopo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CICLO -->
+  <section id="ciclo">
+    <h2>Ciclo supervisionado de um turno</h2>
+    <p class="sub">A próxima proposta sempre parte do resultado anterior ou do feedback humano. É isso que diferencia o agente de uma sequência fixa.</p>
+    <div class="card diagram">
+      <svg viewBox="0 0 910 410" role="img" aria-label="Diagrama do ciclo de supervisão">
+        <defs>
+          <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+        </defs>
+        <rect class="n-ok" x="10" y="70" width="170" height="56" rx="9"/>
+        <text class="t" x="95" y="94" text-anchor="middle">Objetivo</text>
+        <text class="ts" x="95" y="111" text-anchor="middle">ID · só o objetivo</text>
+
+        <rect class="n-acc" x="230" y="70" width="190" height="56" rx="9"/>
+        <text class="t" x="325" y="94" text-anchor="middle">LLM propõe (JSON)</text>
+        <text class="ts" x="325" y="111" text-anchor="middle">hipótese · raciocínio · ferramenta</text>
+
+        <rect class="n-warn" x="470" y="70" width="170" height="56" rx="9"/>
+        <text class="t" x="555" y="94" text-anchor="middle">Validação</text>
+        <text class="ts" x="555" y="111" text-anchor="middle">formato + escopo</text>
+
+        <rect class="n-ok" x="690" y="70" width="190" height="56" rx="9"/>
+        <text class="t" x="785" y="94" text-anchor="middle">Decisão humana</text>
+        <text class="ts" x="785" y="111" text-anchor="middle">A · M · R · F</text>
+
+        <rect class="n" x="690" y="8" width="190" height="40" rx="8"/>
+        <text class="t" x="785" y="33" text-anchor="middle">F · Finalizar → conclusão</text>
+
+        <rect class="n-bad" x="470" y="180" width="170" height="56" rx="9"/>
+        <text class="t" x="555" y="204" text-anchor="middle">R · Rejeitar</text>
+        <text class="ts" x="555" y="221" text-anchor="middle">motivo volta ao modelo</text>
+
+        <rect class="n-warn" x="720" y="180" width="160" height="56" rx="9"/>
+        <text class="t" x="800" y="204" text-anchor="middle">M · Modificar</text>
+        <text class="ts" x="800" y="221" text-anchor="middle">original + editado no log</text>
+
+        <rect class="n" x="720" y="290" width="160" height="56" rx="9"/>
+        <text class="t" x="800" y="314" text-anchor="middle">Executa</text>
+        <text class="ts" x="800" y="331" text-anchor="middle">ferramenta controlada</text>
+
+        <rect class="n" x="470" y="290" width="170" height="56" rx="9"/>
+        <text class="t" x="555" y="314" text-anchor="middle">Resumo</text>
+        <text class="ts" x="555" y="331" text-anchor="middle">corta e sanitiza a saída</text>
+
+        <rect class="n-acc" x="230" y="290" width="190" height="56" rx="9"/>
+        <text class="t" x="325" y="314" text-anchor="middle">LLM interpreta</text>
+        <text class="ts" x="325" y="331" text-anchor="middle">evidência → próximo passo</text>
+
+        <!-- fluxo principal -->
+        <path class="e" d="M180,98 H230" marker-end="url(#a3)"/>
+        <path class="e" d="M420,98 H470" marker-end="url(#a3)"/>
+        <path class="e" d="M640,98 H690" marker-end="url(#a3)"/>
+        <!-- JSON inválido -->
+        <path class="e-dash" d="M520,70 C520,36 380,36 380,70" marker-end="url(#a3)"/>
+        <text class="tl" x="450" y="32" text-anchor="middle">inválido → nova tentativa (logada)</text>
+        <!-- F -->
+        <path class="e" d="M785,70 V48" marker-end="url(#a3)"/>
+        <!-- R -->
+        <path class="e" d="M700,126 V208 H640" marker-end="url(#a3)"/>
+        <path class="e" d="M470,208 H380 V126" marker-end="url(#a3)"/>
+        <!-- M -->
+        <path class="e" d="M800,126 V180" marker-end="url(#a3)"/>
+        <path class="e" d="M800,236 V290" marker-end="url(#a3)"/>
+        <!-- A -->
+        <path class="e" d="M880,98 H898 V318 H880" marker-end="url(#a3)"/>
+        <text class="t" x="904" y="214" text-anchor="middle">A</text>
+        <!-- retorno -->
+        <path class="e" d="M720,318 H640" marker-end="url(#a3)"/>
+        <path class="e" d="M470,318 H420" marker-end="url(#a3)"/>
+        <path class="e" d="M300,290 V126" marker-end="url(#a3)"/>
+        <text class="tl" x="296" y="214" text-anchor="end">nova proposta</text>
+        <text class="tl" x="296" y="228" text-anchor="end">a partir do resultado</text>
+
+        <!-- logger -->
+        <rect class="n-box" x="10" y="366" width="870" height="34" rx="8"/>
+        <text class="ts" x="445" y="388" text-anchor="middle">Logger em todo turno: resposta bruta · proposta original · decisão + justificativa · parâmetros finais · resultado · interpretação · anotação do grupo</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- RACIOCÍNIO -->
+  <section id="raciocinio">
+    <h2>Linha de raciocínio para a Fase 3.1</h2>
+    <p class="sub">Comparação de abordagens para o planejamento sem IA. Método completo e template em branco: <code>.claude/guia_raciocinio_fase31.md</code>.</p>
+    <div class="grid g3">
+      <div class="card opt">
+        <span class="pill p-bad tag">evitar</span>
+        <h3>A · Lista de falhas conhecidas</h3>
+        <p class="sub" style="margin:0">Mirar em desafios conhecidos do Juice Shop.</p>
+        <ul>
+          <li>Hipóteses não nascem de observação própria</li>
+          <li>O LLM também conhece as soluções, então mede memória e não raciocínio</li>
+          <li>A rubrica não premia quantidade de falhas</li>
+        </ul>
+      </div>
+      <div class="card opt pick">
+        <span class="pill p-ok tag">escolhida</span>
+        <h3>B · Observação → hipótese → evidência</h3>
+        <p class="sub" style="margin:0">Explorar, anotar, formular hipóteses refutáveis e definir antes o que confirma ou refuta.</p>
+        <ul>
+          <li>Coincide com o texto do PDF (análise inicial, hipóteses, evidências)</li>
+          <li>Hipótese refutada vira resultado válido</li>
+          <li>Dá um padrão para comparar cada proposta do agente</li>
+        </ul>
+      </div>
+      <div class="card opt">
+        <span class="pill p-bad tag">não atende</span>
+        <h3>C · Exploração livre com o agente</h3>
+        <p class="sub" style="margin:0">Deixar o agente decidir e documentar depois.</p>
+        <ul>
+          <li>O PDF exige plano antes do LLM</li>
+          <li>Sem ponto de comparação para a análise crítica</li>
+          <li>Perde o critério de planejamento</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card diagram" style="margin-top:12px">
+      <svg viewBox="0 0 920 210" role="img" aria-label="Fluxo da linha de raciocínio B">
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+        </defs>
+        <rect class="n-ok" x="10" y="30" width="130" height="64" rx="9"/>
+        <text class="t" x="75" y="57" text-anchor="middle">Observação</text>
+        <text class="ts" x="75" y="75" text-anchor="middle">vista por nós, com data</text>
+
+        <rect class="n-ok" x="165" y="30" width="130" height="64" rx="9"/>
+        <text class="t" x="230" y="57" text-anchor="middle">Hipótese</text>
+        <text class="ts" x="230" y="75" text-anchor="middle">se… então… porque…</text>
+
+        <rect class="n-ok" x="320" y="30" width="130" height="64" rx="9"/>
+        <text class="t" x="385" y="57" text-anchor="middle">Critério</text>
+        <text class="ts" x="385" y="75" text-anchor="middle">confirma · refuta · ?</text>
+
+        <rect class="n-ok" x="475" y="30" width="130" height="64" rx="9"/>
+        <text class="t" x="540" y="57" text-anchor="middle">Ferramentas</text>
+        <text class="ts" x="540" y="75" text-anchor="middle">que evidência geram</text>
+
+        <rect class="n-acc" x="630" y="30" width="130" height="64" rx="9"/>
+        <text class="t" x="695" y="57" text-anchor="middle">Execução</text>
+        <text class="ts" x="695" y="75" text-anchor="middle">agente + logs</text>
+
+        <rect class="n" x="785" y="30" width="125" height="64" rx="9"/>
+        <text class="t" x="847" y="57" text-anchor="middle">Conclusão</text>
+        <text class="ts" x="847" y="75" text-anchor="middle">cita o turno</text>
+
+        <path class="e" d="M140,62 H165" marker-end="url(#a4)"/>
+        <path class="e" d="M295,62 H320" marker-end="url(#a4)"/>
+        <path class="e" d="M450,62 H475" marker-end="url(#a4)"/>
+        <path class="e" d="M605,62 H630" marker-end="url(#a4)"/>
+        <path class="e" d="M760,62 H785" marker-end="url(#a4)"/>
+
+        <rect class="n-ok" x="165" y="135" width="285" height="56" rx="9"/>
+        <text class="t" x="307" y="159" text-anchor="middle">Previsão do grupo sobre a IA</text>
+        <text class="ts" x="307" y="176" text-anchor="middle">onde deve ajudar · onde deve errar</text>
+
+        <rect class="n-acc" x="630" y="135" width="280" height="56" rx="9"/>
+        <text class="t" x="770" y="159" text-anchor="middle">Análise crítica</text>
+        <text class="ts" x="770" y="176" text-anchor="middle">previsão × o que aconteceu nos logs</text>
+
+        <path class="e-dash" d="M230,94 V135" marker-end="url(#a4)"/>
+        <path class="e" d="M450,163 H630" marker-end="url(#a4)"/>
+        <path class="e-dash" d="M847,94 V135" marker-end="url(#a4)"/>
+      </svg>
+      <div class="legend">
+        <span><i class="lg-ok"></i>escrito pelo grupo antes do LLM (Fase 3.1)</span>
+        <span><i class="lg-acc"></i>depois, com o agente</span>
+      </div>
+    </div>
+
+    <h3 style="margin-top:20px">Cada investigação deve pressionar uma capacidade diferente do agente</h3>
+    <p class="sub">O aspecto concreto de cada uma é decisão do grupo. A tabela só garante que as três não testem a mesma coisa.</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Situação (PDF)</th><th>Capacidade do agente testada</th><th>Falha de LLM a observar</th></tr>
+        <tr><td class="k">Reconhecimento</td><td>Escolher ferramentas e priorizar com muita informação</td><td>Repetir ações; citar itens que não estavam no resultado</td></tr>
+        <tr><td class="k">Autenticação / autorização</td><td>Manter estado entre turnos e seguir uma sequência</td><td>Esquecer o que já obteve; passos fora de ordem</td></tr>
+        <tr><td class="k">Entradas / requisições</td><td>Interpretar respostas e mensagens de erro</td><td>Concluir sem evidência; ler o erro de forma errada</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section id="checklist">
+    <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap">
+      <div>
+        <h2>Checklist de nota cheia</h2>
+        <p class="sub">Marque conforme concluir. Fica salvo só neste navegador.</p>
+      </div>
+      <button class="btn" id="reset-ck" type="button">Limpar marcações</button>
+    </div>
+    <div id="ck"></div>
+  </section>
+
+  <!-- RISCOS -->
+  <section id="riscos">
+    <h2>Riscos</h2>
+    <p class="sub">Os itens marcados como "vira evidência" também servem de material para a análise crítica.</p>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Risco</th><th>Impacto</th><th>Prevenção</th></tr>
+        <tr><td>Professor não aceita Kali em container</td><td><span class="pill p-warn">médio</span></td><td>Perguntar cedo; o agente só depende do nome do alvo</td></tr>
+        <tr><td>Apache/NAT do Roteiro 1 ativos durante a AF</td><td><span class="pill p-warn">médio</span></td><td>Parar Apache/MariaDB e o NAT 80/8000; allowlist só aceita <code>juiceshop:3000</code></td></tr>
+        <tr><td>Porta publicada em <code>0.0.0.0</code> por engano</td><td><span class="pill p-bad">alto</span></td><td>Bind em <code>127.0.0.1</code>; teste pela VPN <span class="pill p-ok">vira evidência</span></td></tr>
+        <tr><td>Juice Shop busca URL externa sugerida pelo agente</td><td><span class="pill p-bad">alto</span></td><td><code>labnet</code> sem saída (<code>firewall.sh</code>); URLs externas rejeitadas</td></tr>
+        <tr><td>VPN cai no meio de uma investigação</td><td><span class="pill p-warn">médio</span></td><td>Agente dentro de <code>tmux</code> no servidor; log gravado a cada turno</td></tr>
+        <tr><td>Grupo vê propostas do agente antes do plano 3.1</td><td><span class="pill p-bad">alto</span></td><td>Teste de fumaça com objetivo neutro; piloto só depois do push</td></tr>
+        <tr><td>Enumeração em SPA devolve 200 em tudo</td><td><span class="pill p-warn">médio</span></td><td>Filtro por tamanho no wrapper <span class="pill p-ok">vira evidência</span></td></tr>
+        <tr><td>qwen3:4b devolve JSON quebrado ou texto de "thinking"</td><td><span class="pill p-warn">médio</span></td><td>Validação + nova tentativa; logar a falha <span class="pill p-ok">vira evidência</span></td></tr>
+        <tr><td>Saída grande estoura o contexto do modelo</td><td><span class="pill p-warn">médio</span></td><td>Limite fixo de resumo, registrado na configuração</td></tr>
+        <tr><td>Modelo "lembra" soluções públicas do Juice Shop</td><td><span class="pill p-warn">médio</span></td><td>Anotar quando a proposta não deriva do resultado anterior <span class="pill p-ok">vira evidência</span></td></tr>
+        <tr><td>Plano 3.1 escrito depois de usar IA</td><td><span class="pill p-bad">alto</span></td><td>Commit do plano antes da revisão; citar hash no relatório</td></tr>
+        <tr><td>Relatório acima de 6 páginas</td><td><span class="pill p-warn">médio</span></td><td>Orçamento de páginas por seção</td></tr>
+        <tr><td>Log salvo só no fim (perde turnos se travar)</td><td><span class="pill p-bad">alto</span></td><td>Gravar a cada turno</td></tr>
+        <tr><td>Reset não volta ao estado inicial</td><td><span class="pill p-warn">médio</span></td><td>Testar duas vezes e anotar a verificação</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <footer>Painel interno da dupla. Fonte: <code>.claude/painel.html</code>; checklist salvo só neste navegador.</footer>
+</main>
+
+<script>
+(function () {
+  var CRIT = [
+    { id: "lab", nome: "Funcionamento e reprodução do laboratório", peso: 15, itens: [
+      ["Kali em container no servidor, com Juice Shop na labnet", "kali e juiceshop no ar na labnet internal; ferramentas via docker exec", "feito"],
+      ["Imagem do Juice Shop com versão fixada", "v20.3.0 fixada por digest", "feito"],
+      ["Ollama com qwen3:4b; digest, versão, temperature e seed anotados", "Ollama v0.40.13, qwen3:4b digest 359d7dd4…, temp 0.2, seed 42 no README e em todo log", "feito"],
+      ["Procedimento de reset testado duas vezes", "2 execuções com HTTP 200 e 0 desafios resolvidos em lab/evidencias/; falta o teste manual com conta criada", "feito"],
+      ["README reproduzido por quem não montou o lab", "README escrito; falta o Raphael reproduzir no kit", "andamento"],
+      ["4 testes de isolamento salvos", "Os 4 em lab/evidencias/: sem VPN, pela VPN e check_env com 0 falhas (04/11)", "feito"]
+    ]},
+    { id: "agente", nome: "Desenvolvimento e integração do agente", peso: 20, itens: [
+      ["Pelo menos 2 ferramentas, 1 interagindo com o Juice Shop", "http_request, nmap_scan, dir_enum, decode_jwt", "feito"],
+      ["Trava de escopo com teste negativo documentado", "14/14 casos em logs/teste_escopo.jsonl + 25 testes de unidade", "feito"],
+      ["Sem shell irrestrito", "argv montado pela trava; docker exec sem shell", "feito"],
+      ["Loop A/M/R/F funcionando", "Validado no teste de fumaça T0; M e R ainda não exercitados em sessão real", "andamento"],
+      ["JSON inválido tratado e registrado", "Nova tentativa com o erro; cada chamada em logs/modelo_<id>.jsonl", "feito"],
+      ["Resumo da saída antes de voltar ao modelo", "Truncado em 3500 caracteres; ffuf agregado por status e tamanho", "feito"],
+      ["Log JSONL por turno com os 6 itens da seção 5 + resposta bruta", "Conferido no log do T0", "feito"],
+      ["Trecho de log mostrando o resultado mudando a próxima proposta", "Prova de que não é sequência fixa"],
+      ["Mesmo objetivo rodado 2× com ambiente diferente e caminhos divergentes", "Seed e temperatura fixas"]
+    ]},
+    { id: "plano", nome: "Planejamento e qualidade técnica", peso: 20, itens: [
+      ["Observações iniciais registradas pelo grupo", ""],
+      ["Matriz 3.1 escrita sem IA (3 investigações distintas)", "Hipóteses refutáveis + critério de confirma/refuta"],
+      ["Previsão do grupo sobre a IA registrada", ""],
+      ["Plano 3.1 commitado e enviado ao remoto antes da revisão", "Hash e horário do push no relatório"],
+      ["Revisão 3.2 pelo LLM com prompt e resposta bruta salvos", ""],
+      ["Tabela Aceito / Modificado / Rejeitado com justificativa técnica", ""],
+      ["Nenhuma proposta do agente sobre os temas vista antes do push", "Teste de fumaça com objetivo neutro; piloto P0 só depois"],
+      ["Hipóteses novas surgidas nos testes registradas", "Campo nova_hipotese no log"]
+    ]},
+    { id: "evid", nome: "Evidências e interpretação", peso: 20, itens: [
+      ["Investigação 1 com os 6 itens", ""],
+      ["Investigação 2 com os 6 itens", ""],
+      ["Investigação 3 com os 6 itens", ""],
+      ["Reset antes de cada investigação, com horário", ""],
+      ["Toda conclusão cita arquivo + turno do log", ""],
+      ["Conclusões classificadas: confirmada / refutada / inconclusiva", "Com limitações explícitas"]
+    ]},
+    { id: "critica", nome: "Análise crítica da IA", peso: 20, itens: [
+      ["Métricas por investigação", "summarize_logs.py pronto; faltam os logs reais", "andamento"],
+      ["Respostas às 7 perguntas do PDF com exemplos de log", ""],
+      ["Estudo de caso de falha (o que, como percebemos, o que fizemos)", ""],
+      ["Comparação estratégia do grupo × caminho do agente", ""],
+      ["Previsão sobre a IA × o que aconteceu", ""],
+      ["Limitações do modelo e da integração, separadas", ""]
+    ]},
+    { id: "doc", nome: "Documentação e apresentação", peso: 5, itens: [
+      ["Relatório entre 4 e 6 páginas", "Foco em interpretação, sem passo a passo de instalação"],
+      ["Vídeo ≤ 10 min com 1 investigação completa", "Mostra ao menos um Modificar ou Rejeitar"],
+      ["Todos os integrantes sabem explicar código e decisões", ""],
+      ["Uso de IA externa tratado conforme a resposta do professor", "Declaração no relatório, se aplicável"]
+    ]}
+  ];
+
+  // Terceiro campo de cada item: "feito" (já marcado por padrão) ou "andamento" (selo).
+  var KEY = "af-painel-checklist-v5";
+  var state = null;
+  try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { state = null; }
+  if (!state) {
+    state = {};
+    CRIT.forEach(function (c) { c.itens.forEach(function (it, i) { if (it[2] === "feito") state[c.id + ":" + i] = 1; }); });
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  var ck = document.getElementById("ck");
+  var rub = document.getElementById("rubric");
+
+  CRIT.forEach(function (c) {
+    var d = document.createElement("details");
+    d.className = "ck";
+    d.innerHTML = '<summary><span class="ck-title">' + c.nome + ' · ' + c.peso + '%</span><span class="ck-count" id="cnt-' + c.id + '"></span><span class="ck-bar"><span id="bar-' + c.id + '"></span></span></summary><div class="ck-items"></div>';
+    var box = d.querySelector(".ck-items");
+    c.itens.forEach(function (it, i) {
+      var key = c.id + ":" + i;
+      var lab = document.createElement("label");
+      var inp = document.createElement("input");
+      inp.type = "checkbox";
+      inp.checked = !!state[key];
+      var span = document.createElement("span");
+      span.textContent = it[0];
+      if (it[2] === "andamento" && !inp.checked) { var pl = document.createElement("span"); pl.className = "pill p-warn"; pl.style.marginLeft = "6px"; pl.textContent = "em andamento"; span.appendChild(pl); }
+      if (it[1]) { var sm = document.createElement("small"); sm.textContent = it[1]; span.appendChild(sm); }
+      lab.appendChild(inp); lab.appendChild(span);
+      if (inp.checked) lab.classList.add("done");
+      inp.addEventListener("change", function () {
+        if (inp.checked) state[key] = 1; else delete state[key];
+        lab.classList.toggle("done", inp.checked);
+        save(); update();
+      });
+      box.appendChild(lab);
+    });
+    ck.appendChild(d);
+
+    var row = document.createElement("div");
+    row.className = "rub-row";
+    row.innerHTML = '<span class="rub-name">' + c.nome + '</span><span class="rub-pct">' + c.peso + '%</span><span class="rub-bar"><span id="rbar-' + c.id + '"></span></span><span class="rub-prog" id="rprog-' + c.id + '"></span>';
+    rub.appendChild(row);
+  });
+
+  function update() {
+    var total = 0;
+    CRIT.forEach(function (c) {
+      var n = c.itens.length, done = 0;
+      for (var i = 0; i < n; i++) if (state[c.id + ":" + i]) done++;
+      var frac = done / n;
+      total += frac * c.peso;
+      document.getElementById("cnt-" + c.id).textContent = done + "/" + n;
+      document.getElementById("bar-" + c.id).style.width = (frac * 100) + "%";
+      var rb = document.getElementById("rbar-" + c.id);
+      rb.style.width = (frac * 100) + "%";
+      rb.classList.toggle("done", done === n);
+      document.getElementById("rprog-" + c.id).textContent = done + " de " + n + " itens";
+    });
+    document.getElementById("score").textContent = Math.round(total) + "%";
+    var topo = document.getElementById("score-top"); if (topo) topo.textContent = Math.round(total) + "%";
+  }
+
+  document.getElementById("reset-ck").addEventListener("click", function () {
+    state = {}; save();
+    document.querySelectorAll("#ck input").forEach(function (i) { i.checked = false; i.parentNode.classList.remove("done"); });
+    update();
+  });
+
+  update();
+})();
+</script>

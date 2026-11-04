@@ -2,4 +2,5 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
-agent/config.yaml
+agent/config.toml
+.claude/settings.local.json
