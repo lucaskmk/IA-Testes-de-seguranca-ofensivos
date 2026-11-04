@@ -62,7 +62,7 @@ sudo usermod -aG docker $USER   # sair e entrar de novo
 ### 3. Instalação
 
 ```bash
-git clone <repositório> ~/af && cd ~/af
+git clone https://github.com/lucaskmk/IA-Testes-de-seguranca-ofensivos.git ~/af && cd ~/af
 bash lab/install.sh
 ```
 
