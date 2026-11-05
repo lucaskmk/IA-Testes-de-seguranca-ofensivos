@@ -1,0 +1,24 @@
+header: {
+  "typ": "JWT",
+  "alg": "RS256"
+}
+payload: {
+  "data": {
+    "id": 25,
+    "username": "",
+    "email": "af-teste@juice.local",
+    "password": "673625af6f64b4d6e2e069373bf0a0af",
+    "role": "customer",
+    "deluxeToken": "",
+    "lastLoginIp": "0.0.0.0",
+    "profileImage": "/assets/public/images/uploads/default.svg",
+    "totpSecret": "",
+    "isActive": true,
+    "createdAt": "2026-11-05 13:43:15.661 +00:00",
+    "updatedAt": "2026-11-05 13:43:15.661 +00:00",
+    "deletedAt": null
+  },
+  "bid": 6,
+  "iat": 1793886277
+}
+assinatura: 171 caracteres (não verificada)

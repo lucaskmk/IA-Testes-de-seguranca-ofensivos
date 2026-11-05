@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Feature-Policy: payment 'self'
+X-Recruiting: /#/jobs
+Content-Type: application/json; charset=utf-8
+Content-Length: 801
+ETag: W/"321-O0N7lh4w3cWX25lQnbmCgsPYZeg"
+Vary: Accept-Encoding
+Date: Thu, 05 Nov 2026 13:44:37 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"authentication":{"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJkYXRhIjp7ImlkIjoyNSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFmLXRlc3RlQGp1aWNlLmxvY2FsIiwicGFzc3dvcmQiOiI2NzM2MjVhZjZmNjRiNGQ2ZTJlMDY5MzczYmYwYTBhZiIsInJvbGUiOiJjdXN0b21lciIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIwLjAuMC4wIiwicHJvZmlsZUltYWdlIjoiL2Fzc2V0cy9wdWJsaWMvaW1hZ2VzL3VwbG9hZHMvZGVmYXVsdC5zdmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMTEtMDUgMTM6NDM6MTUuNjYxICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMTEtMDUgMTM6NDM6MTUuNjYxICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImJpZCI6NiwiaWF0IjoxNzkzODg2Mjc3fQ.kxVqr24fJn-yyxjWdeWKJwOAwYgRsd67P6enw6zWYToU_Q7VIY7RnbAfCtPJO4lAQ7z0JsnTGo0MyQwcEwLqZ0XzC7xqPqJmM36VKJcCYhHO9x4Umyx5iMhErHNONsya0GNRUUmt0RNR3StKMZIAPaonUznIT_P0EIK-VqzD_LI","bid":6,"umail":"af-teste@juice.local"}}
