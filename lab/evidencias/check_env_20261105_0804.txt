@@ -1,0 +1,28 @@
+# check_env 2026-11-05T08:04:03-03:00 em aps1lr
+## Versões
+docker: Docker version 29.1.3, build 29.1.3-0ubuntu3~24.04.2
+compose: 2.40.3+ds1-0ubuntu1~24.04.1
+ollama: ollama version is 0.40.13
+modelo: qwen3:4b id=359d7dd4bcda 2.5GB
+juiceshop: bkimminich/juice-shop:v20.3.0@sha256:cea5a4af4aacee498c491491af0408934ec81d004035c0a02ef3e54395e3bf27
+kali: af-kali:2026.10 sha256:ff63c5479b7de57c0249fd892e2f193e9cb7e1366ee157a3ccfdd83fdf9e2df8
+kali/nmap: Nmap version 7.991 ( https://nmap.org )
+kali/curl: curl 8.22.0 (x86_64-pc-linux-gnu) libcurl/8.22.0 OpenSSL/3.6.5 zlib/1.3.2 brotli/1.2.0 zstd/1.5.7 libidn2/2.3.8 libpsl/0.23.3 libssh2/1.11.1 nghttp2/1.70.0 ngtcp2/1.24.0 nghttp3/1.17.0 mit-krb5/1.22.1 OpenLDAP/2.6.14
+kali/ffuf: ffuf version: 2.3.0
+## Serviços
+PASS  digest do qwen3:4b confere (359d7dd4bcda)
+PASS  Ollama responde em 127.0.0.1:11434
+PASS  Ollama escuta só em loopback
+PASS  Juice Shop responde ao host em http://172.31.80.10:3000
+PASS  kali alcança juiceshop:3000
+## Isolamento
+PASS  labnet é internal (sem rota para fora)
+PASS  nenhuma porta 3000 publicada no host
+PASS  kali NÃO alcança internet (1.1.1.1:443)
+PASS  kali NÃO alcança pfSense (10.0.80.1:80)
+PASS  kali NÃO alcança SSH do servidor (IP da LAN) (10.0.80.3:22)
+PASS  kali NÃO alcança SSH do servidor (gateway da labnet) (172.31.80.1:22)
+PASS  kali NÃO alcança Apache do servidor (gateway) (172.31.80.1:80)
+PASS  kali NÃO alcança Ollama (gateway) (172.31.80.1:11434)
+PASS  kali não acessa https://example.com
+## Resultado: 0 falha(s)
