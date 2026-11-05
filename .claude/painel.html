@@ -934,49 +934,49 @@
       ["Pelo menos 2 ferramentas, 1 interagindo com o Juice Shop", "http_request, nmap_scan, dir_enum, decode_jwt", "feito"],
       ["Trava de escopo com teste negativo documentado", "14/14 casos em logs/teste_escopo.jsonl + 25 testes de unidade", "feito"],
       ["Sem shell irrestrito", "argv montado pela trava; docker exec sem shell", "feito"],
-      ["Loop A/M/R/F funcionando", "Validado no teste de fumaça T0; M e R ainda não exercitados em sessão real", "andamento"],
-      ["JSON inválido tratado e registrado", "Nova tentativa com o erro; cada chamada em logs/modelo_<id>.jsonl", "feito"],
+      ["Loop A/M/R/F funcionando", "Exercitado nas 3 investigações: 7 modificações, 1 rejeição, 1 bloqueio de escopo", "feito"],
+      ["JSON inválido tratado e registrado", "Nova tentativa com o erro; 0 JSON inválido em 13 chamadas", "feito"],
       ["Resumo da saída antes de voltar ao modelo", "Truncado em 3500 caracteres; ffuf agregado por status e tamanho", "feito"],
-      ["Log JSONL por turno com os 6 itens da seção 5 + resposta bruta", "Conferido no log do T0", "feito"],
-      ["Trecho de log mostrando o resultado mudando a próxima proposta", "Prova de que não é sequência fixa"],
-      ["Mesmo objetivo rodado 2× com ambiente diferente e caminhos divergentes", "Seed e temperatura fixas"]
+      ["Log JSONL por turno com os 6 itens da seção 5 + resposta bruta", "I1/I2/I3 com SHA-256 das saídas conferido", "feito"],
+      ["Trecho de log mostrando o resultado mudando a próxima proposta", "I2 turno 3: modelo corrige o login citando o feedback", "feito"],
+      ["Mesmo objetivo rodado 2× com ambiente diferente e caminhos divergentes", "Replay contrafactual (logs/replay_T1_fumaca.jsonl)", "feito"]
     ]},
     { id: "plano", nome: "Planejamento e qualidade técnica", peso: 20, itens: [
-      ["Observações iniciais registradas pelo grupo", ""],
-      ["Matriz 3.1 escrita sem IA (3 investigações distintas)", "Hipóteses refutáveis + critério de confirma/refuta"],
-      ["Previsão do grupo sobre a IA registrada", ""],
-      ["Plano 3.1 commitado e enviado ao remoto antes da revisão", "Hash e horário do push no relatório"],
-      ["Revisão 3.2 pelo LLM com prompt e resposta bruta salvos", ""],
-      ["Tabela Aceito / Modificado / Rejeitado com justificativa técnica", ""],
-      ["Nenhuma proposta do agente sobre os temas vista antes do push", "Teste de fumaça com objetivo neutro; piloto P0 só depois"],
-      ["Hipóteses novas surgidas nos testes registradas", "Campo nova_hipotese no log"]
+      ["Observações iniciais registradas pelo grupo", "9 observações datadas (planejamento/)", "feito"],
+      ["Matriz 3.1 escrita sem IA (3 investigações distintas)", "3 hipóteses falseáveis + confirma/refuta", "feito"],
+      ["Previsão do grupo sobre a IA registrada", "feita para I1; I2/I3 ficam com a dupla", "andamento"],
+      ["Plano 3.1 commitado e enviado ao remoto antes da revisão", "commit c4174d5 às 09:16, antes da revisão às 09:22", "feito"],
+      ["Revisão 3.2 pelo LLM com prompt e resposta bruta salvos", "logs/revisao_plano.jsonl", "feito"],
+      ["Tabela Aceito / Modificado / Rejeitado com justificativa técnica", "6 sugestões: 1/3/2", "feito"],
+      ["Nenhuma proposta do agente sobre os temas vista antes do push", "Testes de fumaça com objetivo neutro", "feito"],
+      ["Hipóteses novas surgidas nos testes registradas", "Campo nova_hipotese usado em I1/I2/I3", "feito"]
     ]},
     { id: "evid", nome: "Evidências e interpretação", peso: 20, itens: [
-      ["Investigação 1 com os 6 itens", ""],
-      ["Investigação 2 com os 6 itens", ""],
-      ["Investigação 3 com os 6 itens", ""],
-      ["Reset antes de cada investigação, com horário", ""],
-      ["Toda conclusão cita arquivo + turno do log", ""],
-      ["Conclusões classificadas: confirmada / refutada / inconclusiva", "Com limitações explícitas"]
+      ["Investigação 1 com os 6 itens", "investigacoes/I1.md — CONFIRMADA", "feito"],
+      ["Investigação 2 com os 6 itens", "investigacoes/I2.md — CONFIRMADA (IDOR)", "feito"],
+      ["Investigação 3 com os 6 itens", "investigacoes/I3.md — CONFIRMADA (SQLi)", "feito"],
+      ["Reset antes de cada investigação, com horário", "registro restore no 1º turno de cada log", "feito"],
+      ["Toda conclusão cita arquivo + turno do log", "", "feito"],
+      ["Conclusões classificadas: confirmada / refutada / inconclusiva", "3 confirmadas + 1 sub-hipótese refutada; limitações explícitas", "feito"]
     ]},
     { id: "critica", nome: "Análise crítica da IA", peso: 20, itens: [
-      ["Métricas por investigação", "summarize_logs.py pronto; faltam os logs reais", "andamento"],
-      ["Respostas às 7 perguntas do PDF com exemplos de log", ""],
-      ["Estudo de caso de falha (o que, como percebemos, o que fizemos)", ""],
-      ["Comparação estratégia do grupo × caminho do agente", ""],
-      ["Previsão sobre a IA × o que aconteceu", ""],
-      ["Limitações do modelo e da integração, separadas", ""]
+      ["Métricas por investigação", "relatorio/metricas.md (13 turnos, 7 modificados)", "feito"],
+      ["Respostas às 7 perguntas do PDF com exemplos de log", "relatorio/analise_critica.md", "feito"],
+      ["Estudo de caso de falha (o que, como percebemos, o que fizemos)", "3 casos: bundle não lido, endpoint alucinado, JWT mal lido", "feito"],
+      ["Comparação estratégia do grupo × caminho do agente", "tabela por investigação", "feito"],
+      ["Previsão sobre a IA × o que aconteceu", "feita para I1; I2/I3 ficam com a dupla", "andamento"],
+      ["Limitações do modelo e da integração, separadas", "", "feito"]
     ]},
     { id: "doc", nome: "Documentação e apresentação", peso: 5, itens: [
-      ["Relatório entre 4 e 6 páginas", "Foco em interpretação, sem passo a passo de instalação"],
-      ["Vídeo ≤ 10 min com 1 investigação completa", "Mostra ao menos um Modificar ou Rejeitar"],
-      ["Todos os integrantes sabem explicar código e decisões", ""],
-      ["Uso de IA externa tratado conforme a resposta do professor", "Declaração no relatório, se aplicável"]
+      ["Relatório entre 4 e 6 páginas", "relatorio/relatorio.md — rascunho, a dupla revisa", "andamento"],
+      ["Vídeo ≤ 10 min com 1 investigação completa", "roteiro pronto (video/); falta gravar", "andamento"],
+      ["Todos os integrantes sabem explicar código e decisões", "revisar e assumir antes da apresentação", "andamento"],
+      ["Uso de IA externa tratado conforme a resposta do professor", "declaração no relatório (marcador na seção 1)", "andamento"]
     ]}
   ];
 
   // Terceiro campo de cada item: "feito" (já marcado por padrão) ou "andamento" (selo).
-  var KEY = "af-painel-checklist-v5";
+  var KEY = "af-painel-checklist-v6";
   var state = null;
   try { state = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { state = null; }
   if (!state) {
