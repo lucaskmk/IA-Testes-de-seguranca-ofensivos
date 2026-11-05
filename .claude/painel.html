@@ -377,6 +377,18 @@
           <li>Contexto do projeto versionado em <code>.claude/</code> (CLAUDE.md, plano, guia e este painel) para continuar de outro computador</li>
         </ul>
       </div>
+      <div class="tl-day">
+        <div class="tl-date">05/11<small>quarta</small></div>
+        <ul class="tl-list">
+          <li>Raphael fez uma revisão técnica independente; aplicamos os achados<small>rascunhos/revisao_tecnica_2026-11-04.md · 524a672</small></li>
+          <li>Servidor passou a ser clone git; cada log aponta para o commit que o gerou</li>
+          <li>Rastreabilidade: log grava a versão do código; <code>summarize_logs</code> reconfere os SHA-256 das saídas</li>
+          <li>Restore agora prova a transição sujo → limpo (marcador + id do container)</li>
+          <li><code>check_env</code> valida o digest do <code>qwen3:4b</code><small>lab/evidencias/check_env_20261105_0804.txt</small></li>
+          <li>Replay contrafactual para medir se a decisão depende do resultado<small>agent/replay.py · logs/replay_T1_fumaca.jsonl · 8dc158e</small></li>
+          <li>Analisamos o OWASP Top 10 do Juice Shop (documento da dupla, fora do push do plano 3.1)</li>
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -429,6 +441,14 @@
         <dt>Descartado</dt><dd>Instalador oficial como serviço; OLLAMA_HOST=0.0.0.0</dd>
         <dt>Por quê</dt><dd>Instalável por qualquer usuário do grupo docker; o Ollama não tem autenticação</dd>
         <dt>Evidência</dt><dd>check_env: escuta só em 127.0.0.1</dd></dl><span class="tag-crit">Laboratório 15%</span></div>
+      <div class="card"><h3>Agente enxuto, não um framework autônomo</h3><dl>
+        <dt>Descartado</dt><dd>Orquestrador autônomo tipo HexStrike (150+ ferramentas via MCP)</dd>
+        <dt>Por quê</dt><dd>O PDF pede ferramentas limitadas, supervisão de cada ação e não avalia autonomia. Um orquestrador removeria o que vale nota e seria inexplicável na arguição</dd>
+        <dt>Evidência</dt><dd>4 ferramentas sob allowlist; vira ponto da análise crítica</dd></dl><span class="tag-crit">Agente 20% · Análise 20%</span></div>
+      <div class="card"><h3>Replay contrafactual em vez de execução dupla</h3><dl>
+        <dt>Descartado</dt><dd>Rodar o mesmo objetivo 2× e comparar os caminhos</dd>
+        <dt>Por quê</dt><dd>As respostas trazem Date/ETag/Last-Modified, então o prompt muda sozinho; o replay troca só o resultado e isola a variável com 2 chamadas</dd>
+        <dt>Evidência</dt><dd>logs/replay_T1_fumaca.jsonl</dd></dl><span class="tag-crit">Análise 20% · pergunta 3</span></div>
       <div class="card"><h3>Rascunhos fora do repositório</h3><dl>
         <dt>Descartado</dt><dd>Versionar rascunhos de plano e análise</dd>
         <dt>Por quê</dt><dd>Só entra no repositório o que a dupla revisou e assumiu. A Fase 3.1 não tem rascunho: é escrita do zero pela dupla</dd>
