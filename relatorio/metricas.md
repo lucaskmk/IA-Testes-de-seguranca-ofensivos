@@ -2,16 +2,16 @@
 
 | Investigação | Turnos | Autorizado | Modificado | Rejeitado | Finalizado | Chamadas ao modelo | JSON inválido | Repetições | Bloqueios de escopo | Novas hipóteses | Tempo médio do modelo (s) | Conclusão |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| T1_fumaca | 2 | 1 | 0 | 0 | 1 | 2 | 0 | 0 | 0 | 0 | 41.3 | INCONCLUSIVA |
+| I1 | 3 | 1 | 1 | 0 | 1 | 3 | 0 | 0 | 0 | 1 | 50.8 | CONFIRMADA |
 
 Tags marcadas pelo grupo durante as investigações:
 
-- T1_fumaca: nenhuma
+- I1: nenhuma
 
 Propostas do modelo em relação ao plano do grupo (marcado na hora da decisão):
 
-- T1_fumaca: NAO_SE_APLICA ×2
+- I1: DIFERENTE ×2, NOVO ×1
 
 Integridade das saídas brutas (SHA-256 recalculado):
 
-- T1_fumaca: 1 conferidas, OK
+- I1: 2 conferidas, OK
