@@ -7,6 +7,7 @@ export TZ=America/Sao_Paulo
 SAIDA="${1:-/dev/null}"
 OLLAMA_BIN="$HOME/.local/ollama/bin/ollama"
 ALVO="http://172.31.80.10:3000"
+DIGEST_MODELO="359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7"
 falhas=0
 
 ok()    { echo "PASS  $*"; }
@@ -34,6 +35,11 @@ exec > >(tee -a "$SAIDA") 2>&1
   echo "kali/ffuf: $(docker exec kali ffuf -V 2>/dev/null | head -1)"
 
   echo "## Serviços"
+  # Digest fixado do qwen3:4b usado em todos os logs; outro digest = outro modelo.
+  digest=$(curl -fs -m 5 http://127.0.0.1:11434/api/tags | python3 -c '
+import json, sys
+print(next((m["digest"] for m in json.load(sys.stdin)["models"] if m["name"] == "qwen3:4b"), ""))' 2>/dev/null)
+  if [[ "$digest" == "$DIGEST_MODELO" ]]; then ok "digest do qwen3:4b confere (${digest:0:12})"; else falha "digest do qwen3:4b diferente do fixado: '${digest:0:12}'"; fi
   if curl -fs -m 5 http://127.0.0.1:11434/api/version >/dev/null; then ok "Ollama responde em 127.0.0.1:11434"; else falha "Ollama não responde"; fi
   if ss -tlnH | awk '{print $4}' | grep -q '^127.0.0.1:11434$'; then ok "Ollama escuta só em loopback"; else falha "Ollama não está só em loopback"; fi
   if [[ "$(curl -s -o /dev/null -w '%{http_code}' -m 5 "$ALVO/")" == "200" ]]; then ok "Juice Shop responde ao host em $ALVO"; else falha "Juice Shop não responde ao host"; fi

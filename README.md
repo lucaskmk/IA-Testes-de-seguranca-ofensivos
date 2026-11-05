@@ -41,7 +41,7 @@ O escopo é garantido em três camadas:
 | Ollama | v0.40.13 (instalado no espaço do usuário, sem sudo) |
 | Modelo | `qwen3:4b` (digest registrado por `lab/check_env.sh`) |
 
-As versões das ferramentas dentro do Kali são registradas pelo `lab/check_env.sh` em `lab/evidencias/`.
+As versões das ferramentas dentro do Kali são registradas pelo `lab/check_env.sh` em `lab/evidencias/`. A base do Kali é fixa, mas ele é uma distribuição contínua: reconstruir a imagem pode instalar versões mais novas de nmap, curl e ffuf; por isso as versões usadas em cada investigação são as que estão na evidência daquele dia. O `check_env` também falha se o digest do `qwen3:4b` for diferente do fixado.
 
 ## Como reproduzir
 
@@ -146,6 +146,8 @@ python3 -m unittest discover -s agent/tests -v   # testes da trava de escopo e d
 python3 agent/teste_escopo.py                    # teste negativo documentado
 python3 agent/revisar_plano.py                   # Fase 3.2: exige o plano commitado, sem alterações e no remoto
 python3 agent/summarize_logs.py I1 I2 I3         # métricas, transcrições e conferência dos SHA-256 das saídas
+python3 agent/replay.py --chamada I2-m007 --repetir                      # linha de base: mesma chamada, sem mudança
+python3 agent/replay.py --chamada I2-m007 --evento-arquivo alt.txt      # contrafactual: troca só o resultado da ferramenta
 ```
 
 ### Depois de cada investigação
