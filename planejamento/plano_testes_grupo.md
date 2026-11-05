@@ -31,6 +31,6 @@ Preencher **antes** de rodar a revisão 3.2 e as investigações (é a nossa apo
 
 | Investigação | Onde esperamos que o modelo ajude | Onde esperamos que erre | Intervenção que achamos que vamos precisar |
 |---|---|---|---|
-| 1 | — a dupla preenche — | — a dupla preenche — | — a dupla preenche — |
+| 1 | Varrer o `main.js` e listar rápido as rotas do roteamento, inclusive paths não linkados no menu (ex.: área admin) — trabalho mecânico de busca em bundle grande | Tratar uma string de rota como achado sem testar o render; confundir resíduo de build / rota morta com endpoint servido; afirmar que um path é acessível sem checar guard client-side ou gate no servidor | A lista do bundle não é prova sozinha: o veredito de "acessível" exige abrir a rota no navegador e ver o status de render — passo manual nosso |
 | 2 | — a dupla preenche — | — a dupla preenche — | — a dupla preenche — |
 | 3 | — a dupla preenche — | — a dupla preenche — | — a dupla preenche — |
