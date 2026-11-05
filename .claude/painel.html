@@ -305,20 +305,20 @@
   <div class="now">
     <div class="now-main">
       <div class="eyebrow">Agora · atualizado em 05/11/2026</div>
-      <h2>Lab, agente, Fase 3.1 e revisão 3.2 prontos. Próximo: as três investigações.</h2>
+      <h2>Rascunho completo pronto. Falta a dupla revisar e gravar o vídeo.</h2>
       <ol>
-        <li>Preencher a previsão sobre a IA (3 linhas) em <code>plano_testes_grupo.md</code>, antes de começar</li>
-        <li>Conduzir I1, I2 e I3: o agente propõe, vocês decidem A/M/R/F com justificativa</li>
-        <li>Restore antes de cada investigação; tudo gravado nos logs</li>
-        <li>Declarar o uso de IA no relatório (o professor liberou)</li>
+        <li>Revisar e assumir os logs e as decisões das 3 investigações (I1, I2, I3 — todas CONFIRMADA)</li>
+        <li>Revisar o relatório (<code>relatorio/relatorio.md</code>) e a análise crítica, na voz de vocês</li>
+        <li>Gravar o vídeo conduzindo a demo vocês mesmos (roteiro em <code>video/roteiro_video.md</code>)</li>
+        <li>Declarar o uso de IA no relatório; Raphael reproduz o README no kit</li>
       </ol>
     </div>
     <div class="areas">
       <div class="score" style="margin:0"><b id="score-top">0%</b><span class="sub" style="margin:0">da rubrica coberta pelo checklist</span></div>
       <div class="area"><b>Laboratório · 15%</b><span class="pill p-ok">pronto</span><small>Isolado em 3 camadas; 4 testes de isolamento e restore salvos</small></div>
-      <div class="area"><b>Agente · 20%</b><span class="pill p-ok">pronto</span><small>Falta exercitar modificar/rejeitar numa sessão real</small></div>
-      <div class="area"><b>Planejamento · 20%</b><span class="pill p-ok">quase</span><small>3.1 e 3.2 prontas; falta a previsão sobre a IA</small></div>
-      <div class="area"><b>Evidências e análise · 40%</b><span class="pill p-warn">a começar</span><small>Agente e plano prontos; faltam as 3 investigações</small></div>
+      <div class="area"><b>Agente · 20%</b><span class="pill p-ok">pronto</span><small>Exercitado nas 3 investigações (7 modificações, 1 rejeição, 1 bloqueio)</small></div>
+      <div class="area"><b>Planejamento · 20%</b><span class="pill p-ok">pronto</span><small>3.1, 3.2 e previsão da I1; falta previsão de I2/I3 (opcional)</small></div>
+      <div class="area"><b>Evidências e análise · 40%</b><span class="pill p-ok">rascunho pronto</span><small>I1/I2/I3 CONFIRMADA; 6 itens, análise crítica e relatório escritos — a revisar</small></div>
     </div>
   </div>
 
@@ -388,6 +388,10 @@
           <li>Analisamos o OWASP Top 10 do Juice Shop (documento da dupla, fora do push do plano 3.1)</li>
           <li>Reconhecimento do alvo e Fase 3.1: 9 observações e 3 hipóteses falseáveis (I1 SPA, I2 autorização, I3 busca)<small>planejamento/ · commit c4174d5, 09:16</small></li>
           <li>Revisão 3.2 pelo modelo: 6 sugestões, decididas (1 aceita, 3 modificadas, 2 rejeitadas por trocar categorias)<small>planejamento/revisao_llm.md · 6366dc4</small></li>
+          <li><b>I1 — reconhecimento: CONFIRMADA.</b> 45 rotas no main.js (admin, accounting, data-export não linkadas); o modelo não as extraiu<small>investigacoes/I1.md · 38bddc6</small></li>
+          <li><b>I2 — autorização: CONFIRMADA.</b> Conta comum lê o registro do admin (IDOR); JWT RS256 refuta JWT fraco mas expõe MD5 e totpSecret<small>investigacoes/I2.md · 956f72c</small></li>
+          <li><b>I3 — entrada: CONFIRMADA.</b> q=apple' → 500 SQLITE_ERROR (SQL injection); a trava de escopo bloqueou a tautologia do modelo<small>investigacoes/I3.md · 947a1dc</small></li>
+          <li>Análise crítica (7 perguntas, 3 casos de falha), relatório e roteiro do vídeo escritos — a dupla revisa<small>relatorio/ · video/ · 717bc8d</small></li>
         </ul>
       </div>
     </div>
