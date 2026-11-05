@@ -1,0 +1,251 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Rota da AF</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: coluna única de leitura ~50rem; bandas de cor só nas "fronteiras"; dado técnico em mono (logs, hash, turno N) é o material do assunto. */
+  :root{
+    --bg:#eef1f0; --surface:#ffffff; --fg:#1b2225; --muted:#5b666b; --border:#d6dcda;
+    --accent:#0f766e;   /* teal = IA / método */
+    --human:#b45309;    /* âmbar = dupla, sem LLM */
+    --rule:#a3341f;     /* tijolo = regra / fronteira */
+    --accent-soft:#0f766e1a; --human-soft:#b4530915; --rule-soft:#a3341f12;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#12171a; --surface:#1a2125; --fg:#e7ece9; --muted:#9aa5a2; --border:#2b353a;
+    --accent:#2dd4bf; --human:#f59e0b; --rule:#fb7185;
+    --accent-soft:#2dd4bf1f; --human-soft:#f59e0b1c; --rule-soft:#fb718518;
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#12171a; --surface:#1a2125; --fg:#e7ece9; --muted:#9aa5a2; --border:#2b353a;
+    --accent:#2dd4bf; --human:#f59e0b; --rule:#fb7185;
+    --accent-soft:#2dd4bf1f; --human-soft:#f59e0b1c; --rule-soft:#fb718518;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;line-height:1.6;}
+  .wrap{max-width:52rem;margin:0 auto;
+    padding-left:max(18px,env(safe-area-inset-left,0px));
+    padding-right:max(18px,env(safe-area-inset-right,0px));
+    padding-block:clamp(28px,6vw,56px);}
+  header .kicker{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 .5rem;}
+  h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:clamp(1.9rem,5.5vw,2.6rem);
+    line-height:1.12;margin:0;text-wrap:balance;letter-spacing:-.01em;}
+  .lead{color:var(--muted);font-size:1.02rem;margin:.9rem 0 0;max-width:46ch;}
+  .note{margin-top:1.4rem;padding:.75rem .9rem;border:1px solid var(--border);border-left:3px solid var(--human);
+    background:var(--human-soft);border-radius:8px;font-size:.9rem;color:var(--fg);}
+  .note strong{color:var(--human);}
+  section{margin-top:clamp(34px,7vw,60px);}
+  h2{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:1.4rem;margin:0 0 .3rem;
+    display:flex;align-items:baseline;gap:.6rem;}
+  h2 .n{font-family:"IBM Plex Mono",monospace;font-size:.85rem;color:var(--accent);font-weight:500;}
+  h2+.sub{color:var(--muted);font-size:.92rem;margin:0 0 1.25rem;}
+  h3{font-size:1rem;margin:1.5rem 0 .5rem;}
+  p{margin:.6rem 0;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:1.1rem 1.2rem;}
+  .grid{display:grid;gap:.9rem;}
+  @media(min-width:560px){.grid.cols-3{grid-template-columns:repeat(3,1fr);}}
+  ul,ol{margin:.5rem 0;padding-left:1.2rem;}
+  li{margin:.35rem 0;}
+  .flow{display:grid;gap:.6rem;counter-reset:step;}
+  .flow li{list-style:none;position:relative;padding:.7rem .9rem .7rem 2.6rem;
+    background:var(--surface);border:1px solid var(--border);border-radius:9px;}
+  .flow{padding-left:0;}
+  .flow li::before{counter-increment:step;content:counter(step);position:absolute;left:.8rem;top:.7rem;
+    font-family:"IBM Plex Mono",monospace;font-size:.8rem;color:var(--accent);font-weight:500;
+    width:1.3rem;height:1.3rem;display:grid;place-items:center;border:1px solid var(--accent);border-radius:50%;}
+  .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;
+    padding:.12rem .45rem;border-radius:5px;white-space:nowrap;vertical-align:middle;}
+  .tag.h{background:var(--human-soft);color:var(--human);border:1px solid var(--human);}
+  .tag.a{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:.4rem 0;border:1px solid var(--border);border-radius:12px;}
+  table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.9rem;}
+  th,td{text-align:left;padding:.7rem .85rem;border-bottom:1px solid var(--border);vertical-align:top;}
+  thead th{background:var(--bg);font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.dim{color:var(--muted);}
+  td em{color:var(--accent);font-style:normal;}
+  .rubric{display:grid;gap:.55rem;}
+  .rubric .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:.8rem;
+    padding:.55rem .2rem;border-bottom:1px dashed var(--border);}
+  .rubric .row:last-child{border-bottom:none;}
+  .rubric .bar{height:.5rem;border-radius:3px;background:var(--border);position:relative;grid-column:1/-1;overflow:hidden;}
+  .rubric .bar>span{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px;}
+  .rubric .w{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;color:var(--fg);font-size:.9rem;}
+  .rubric .hot .w{color:var(--accent);font-weight:500;}
+  .budget{display:grid;gap:.5rem;}
+  .budget .item{display:grid;grid-template-columns:1fr auto;gap:.6rem;align-items:baseline;
+    padding:.6rem .85rem;background:var(--surface);border:1px solid var(--border);border-radius:9px;}
+  .budget .pp{font-family:"IBM Plex Mono",monospace;font-size:.8rem;color:var(--muted);white-space:nowrap;
+    font-variant-numeric:tabular-nums;}
+  .budget .item p{margin:.3rem 0 0;font-size:.85rem;color:var(--muted);grid-column:1/-1;}
+  .ph{font-family:"IBM Plex Mono",monospace;font-size:.82rem;color:var(--human);
+    background:var(--human-soft);padding:.05rem .3rem;border-radius:4px;}
+  pre{margin:0;padding:1rem 1.1rem;background:#0d1417;color:#cfe8e3;border-radius:10px;overflow-x:auto;
+    font-family:"IBM Plex Mono",monospace;font-size:.8rem;line-height:1.55;border:1px solid var(--border);}
+  :root[data-theme="light"] pre,:root:not([data-theme="dark"]) pre{}
+  .k{color:#7fd4c8;} .s{color:#e4b781;} .c{color:#6b7f85;}
+  .bound{border-radius:12px;padding:1rem 1.1rem;border:1px solid var(--border);background:var(--surface);
+    border-top:3px solid var(--border);}
+  .bound.h{border-top-color:var(--human);}
+  .bound.a{border-top-color:var(--accent);}
+  .bound.x{border-top-color:var(--rule);}
+  .bound h3{margin:.1rem 0 .5rem;font-size:.95rem;}
+  .bound.h h3{color:var(--human);} .bound.a h3{color:var(--accent);} .bound.x h3{color:var(--rule);}
+  .bound ul{font-size:.87rem;margin:.2rem 0;}
+  .checks{display:grid;gap:.5rem;margin-top:.6rem;}
+  .checks div{padding:.55rem .8rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;
+    font-size:.88rem;}
+  .checks .q{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--accent);margin-right:.4rem;}
+  footer{margin-top:clamp(40px,8vw,64px);padding-top:1.4rem;border-top:1px solid var(--border);
+    color:var(--muted);font-size:.85rem;}
+  a{color:var(--accent);}
+  .divider{height:1px;background:var(--border);margin:1.4rem 0;border:none;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="kicker">AF · Tecnologias Hackers · Grupo 6</p>
+    <h1>Rota da AF: onde está a nota e como chegar lá</h1>
+    <p class="lead">Um guia de <strong>método e forma</strong> para executar a avaliação com foco na rubrica. O conteúdo avaliado — hipóteses, decisões, conclusões — é escrito pela dupla.</p>
+    <div class="note"><strong>Regra que organiza tudo (enunciado, seção 3):</strong> o planejamento inicial é feito <em>sem o apoio do LLM</em>, para registrar a estratégia do próprio grupo. Só depois do commit + push o modelo entra para revisar. Essa regra não é um obstáculo — é o que cria o objeto de comparação "plano × agente", que vale 40% da nota.</div>
+  </header>
+
+  <section>
+    <h2><span class="n">01</span> Como organizar o trabalho</h2>
+    <p class="sub">Separe por papel, não por janela. Quem faz o quê, e em que ordem.</p>
+    <ol class="flow">
+      <li><strong>Plano 3.1 — a dupla, sem LLM.</strong> Explorar o Juice Shop manualmente e escrever observações + hipóteses + critério de evidência direto em <code>planejamento/</code>. Depois: <code>commit + push</code>. <span class="tag h">dupla</span></li>
+      <li><strong>Revisão 3.2 — modelo local.</strong> Rodar <code>revisar_plano.py</code> (o <code>qwen</code> local, que é a IA sancionada no loop). A dupla preenche a tabela aceita/modificada/rejeitada com justificativa técnica. Numa sessão limpa, para o passo ficar auditável. <span class="tag a">qwen local</span></li>
+      <li><strong>Piloto P0.</strong> Calibrar prompt/wrappers com objetivo neutro; registrar as mudanças. <span class="tag a">agente</span></li>
+      <li><strong>Investigações I1–I3 + execução dupla.</strong> O agente recebe só o objetivo e propõe ações; a dupla autoriza/modifica/rejeita/finaliza e justifica. <span class="tag h">dupla</span> <span class="tag a">agente</span></li>
+      <li><strong>Métricas, relatório, vídeo, checklist.</strong> <code>summarize_logs.py</code> gera as tabelas; a dupla escreve a interpretação. <span class="tag h">dupla</span></li>
+    </ol>
+    <p style="margin-top:1rem;font-size:.9rem;color:var(--muted)"><strong style="color:var(--rule)">Onde implementar:</strong> aqui mesmo — esta sessão já acessa o repositório. Scaffolding de engenharia e o rascunho do relatório vão para <code>rascunhos/</code> (fora do git até a dupla assumir). <strong style="color:var(--rule)">IA externa:</strong> o Claude é externo ao kit; enquanto a pergunta ao professor sobre IA externa não for respondida, o uso dele fica em forma e engenharia, nunca no conteúdo avaliado.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span> Onde está a nota</h2>
+    <p class="sub">A rubrica (seção 8). Repare que 40% vêm de evidências + análise crítica — trabalho humano que os logs só sustentam.</p>
+    <div class="card rubric">
+      <div class="row"><span>Funcionamento e reprodução do laboratório</span><span class="w">15%</span><div class="bar"><span style="width:15%"></span></div></div>
+      <div class="row"><span>Desenvolvimento e integração do agente</span><span class="w">20%</span><div class="bar"><span style="width:20%"></span></div></div>
+      <div class="row hot"><span>Planejamento e qualidade técnica dos testes</span><span class="w">20%</span><div class="bar"><span style="width:20%"></span></div></div>
+      <div class="row hot"><span>Qualidade das evidências e interpretação</span><span class="w">20%</span><div class="bar"><span style="width:20%"></span></div></div>
+      <div class="row hot"><span>Análise crítica da contribuição da IA</span><span class="w">20%</span><div class="bar"><span style="width:20%"></span></div></div>
+      <div class="row"><span>Documentação e apresentação</span><span class="w">5%</span><div class="bar"><span style="width:5%"></span></div></div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted);margin-top:.8rem">O enunciado é explícito: <em>não</em> se avalia pela quantidade de vulnerabilidades nem pelo nível de autonomia do agente. Vale a qualidade dos testes, a capacidade de supervisionar a IA e a consistência das conclusões.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span> Pensado × Ideal</h2>
+    <p class="sub">O método que propus primeiro vs. o rebalanceado pelo enunciado — e por quê.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Dimensão</th><th>Inicial</th><th>Ideal (ancorado no PDF)</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Plano × agente</strong></td><td class="dim">Experimento controlado, "quem vai melhor"</td><td>Comparação <em>interpretativa</em>: possibilidades e limites, sem eleger vencedor (seção 6)</td></tr>
+          <tr><td><strong>Métricas</strong></td><td class="dim">Dashboard quantitativo</td><td>Contagens <em>ilustrativas</em> citando <code>turno N</code>; com N=3, nada de "taxa"</td></tr>
+          <tr><td><strong>Infra de log</strong></td><td class="dim">Pilar (append-only, 2 stores, schema)</td><td>Suporte; manter o que já existe (lab = 15%)</td></tr>
+          <tr><td><strong>Supervisão A/M/R/F</strong></td><td class="dim">Pouco espaço</td><td><em>Centro do relatório</em>: casos de modificar/rejeitar + justificativa</td></tr>
+          <tr><td><strong>Limitação concreta</strong></td><td class="dim">Item numa lista</td><td>Narrativa <em>obrigatória</em>, escolhida cedo (ex.: <code>T0_fumaca</code>)</td></tr>
+          <tr><td><strong>Evidência</strong></td><td class="dim">Incluída</td><td>Mantém — sugestão do modelo nunca é evidência (seção 5)</td></tr>
+          <tr><td><strong>Hipóteses</strong></td><td class="dim">Flertei em sugerir</td><td>Da dupla, sem LLM (seção 3); meu papel é só forma</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span> Fluxo de uma investigação</h2>
+    <p class="sub">Nível de processo (o conteúdo é da dupla). As três investigações seguem os eixos sugeridos na seção 4: reconhecimento/enumeração; autenticação ou autorização; tratamento de entradas/requisições/acesso a recursos.</p>
+    <ol class="flow">
+      <li><strong>Observação factual</strong> — algo visto no ambiente, com data e como foi visto.</li>
+      <li><strong>Hipótese falseável</strong> — <em>"se [condição observável], então [comportamento esperado], porque [conceito da disciplina]."</em></li>
+      <li><strong>Critério de evidência, antes de testar</strong> — o que confirma, o que refuta, o que é inconclusivo.</li>
+      <li><strong>Ferramenta</strong> — qual das 4 do agente geraria a evidência; qual a dupla usaria manualmente.</li>
+      <li><strong>Limites</strong> — o que fica fora de escopo (só <code>juiceshop:3000</code>).</li>
+    </ol>
+    <h3>As 7 perguntas da análise crítica (seção 6) — checklist</h3>
+    <div class="checks">
+      <div><span class="q">Q1</span>Em quais situações o modelo deu sugestões tecnicamente adequadas?</div>
+      <div><span class="q">Q2</span>O agente selecionou ferramentas coerentes com os objetivos?</div>
+      <div><span class="q">Q3</span>Os resultados influenciaram as decisões seguintes do modelo?</div>
+      <div><span class="q">Q4</span>Houve interpretações incorretas ou conclusões sem evidência?</div>
+      <div><span class="q">Q5</span>Houve ações repetitivas, desnecessárias ou inadequadas?</div>
+      <div><span class="q">Q6</span>Em quais situações a intervenção humana foi necessária?</div>
+      <div><span class="q">Q7</span>Quais limitações surgiram no modelo e na integração?</div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted);margin-top:.7rem">Exigência fixa: <strong>pelo menos um exemplo concreto de limitação</strong>, explicando como foi identificado e tratado. Escolham cedo.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> Esqueleto do relatório (4–6 páginas)</h2>
+    <p class="sub">A forma, com orçamento de páginas por peso da rubrica. O conteúdo em <span class="ph">«âmbar»</span> é da dupla. O enunciado pede priorizar interpretação e evitar descrições longas de instalação ou prints sem análise.</p>
+    <div class="budget">
+      <div class="item"><strong>1 · Arquitetura do laboratório</strong><span class="pp">~0,75 p</span><p>Diagrama do kit + isolamento em 3 camadas. Curto — é contexto, não o foco.</p></div>
+      <div class="item"><strong>2 · Estratégia de testes + integração do agente</strong><span class="pp">~1 p</span><p>O plano 3.1 da dupla em resumo, a revisão 3.2 (tabela A/M/R) e as 4 ferramentas / limites do agente. <span class="ph">«resumo do plano e das decisões 3.2»</span></p></div>
+      <div class="item"><strong>3 · Investigações I1–I3</strong><span class="pp">~2 p</span><p>Por investigação: os 6 itens. Cada conclusão cita <code>logs/investigacao_&lt;id&gt;.jsonl, turno N</code>. <span class="ph">«hipótese, execução, evidência, conclusão»</span></p></div>
+      <div class="item"><strong>4 · Análise crítica da IA</strong><span class="pp">~1,5 p</span><p>As 7 perguntas, <strong>1 limitação concreta</strong> e a comparação plano × agente (sem provar superioridade). <span class="ph">«onde ajudou, onde falhou»</span></p></div>
+      <div class="item"><strong>5 · Conclusão</strong><span class="pp">~0,25 p</span><p>O que as evidências sustentam e quando a intervenção humana foi necessária.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span> Disciplina de evidência + log</h2>
+    <p class="sub">Os 6 campos que o enunciado (seção 5) exige para reconstruir a investigação. Logs nunca editados à mão; toda conclusão aponta para um turno.</p>
+    <pre><span class="c">// um evento por linha (JSONL), por turno</span>
+{
+  <span class="k">"turn_id"</span>: <span class="s">7</span>,
+  <span class="k">"objetivo"</span>: <span class="s">"&lt;só o objetivo, nunca a hipótese&gt;"</span>,
+  <span class="k">"acao_proposta"</span>: <span class="s">"..."</span>,        <span class="c">// 1. ação do agente</span>
+  <span class="k">"ferramenta"</span>: <span class="s">"http_request"</span>,
+  <span class="k">"parametros"</span>: { },               <span class="c">// 2. ferramenta + params</span>
+  <span class="k">"decisao_grupo"</span>: <span class="s">"modificada"</span>,    <span class="c">// 3. autorizar/modificar/rejeitar</span>
+  <span class="k">"resultado_hash"</span>: <span class="s">"sha256:..."</span>,  <span class="c">// 4. resultado da ferramenta</span>
+  <span class="k">"interpretacao_modelo"</span>: <span class="s">"..."</span>,    <span class="c">// 5. leitura do modelo</span>
+  <span class="k">"decisao_pos_resultado"</span>: <span class="s">"..."</span>,   <span class="c">// 6. decisão da dupla depois</span>
+  <span class="k">"model_digest"</span>: <span class="s">"359d7dd4..."</span>, <span class="k">"temp"</span>: <span class="s">0.2</span>, <span class="k">"seed"</span>: <span class="s">42</span>, <span class="k">"prompt_hash"</span>: <span class="s">"..."</span>
+}</pre>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span> Fronteiras</h2>
+    <p class="sub">Quem pode fazer o quê. É isto que mantém a nota (e a honestidade) de pé.</p>
+    <div class="grid cols-3">
+      <div class="bound h">
+        <h3>Dupla — sem LLM</h3>
+        <ul>
+          <li>Plano 3.1: observações, hipóteses, critério de evidência, estratégia</li>
+          <li>Decisões A/M/R/F + justificativas</li>
+          <li>Conclusões e análise crítica</li>
+          <li>Comparação plano × agente</li>
+        </ul>
+      </div>
+      <div class="bound a">
+        <h3>Modelo local (qwen)</h3>
+        <ul>
+          <li>Propõe ações e ferramentas nas investigações</li>
+          <li>Interpreta resultados das ferramentas</li>
+          <li>Revisa o plano na 3.2 (via <code>revisar_plano.py</code>)</li>
+        </ul>
+      </div>
+      <div class="bound x">
+        <h3>IA externa (Claude)</h3>
+        <ul>
+          <li>Schema de log, <code>summarize_logs</code>, scaffolding</li>
+          <li>Esqueleto do relatório, este guia, revisão de clareza</li>
+          <li>Nada de conteúdo avaliado até o professor liberar IA externa</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>Próximo passo que destrava tudo:</strong> a dupla escreve o plano 3.1 (sem LLM) e dá push. Com o hash no repositório, a 3.2 em diante anda rápido. · Guia de método — não é peça de entrega.</p>
+  </footer>
+</div>
