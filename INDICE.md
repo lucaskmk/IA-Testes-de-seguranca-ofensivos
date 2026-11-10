@@ -13,6 +13,7 @@ Ponto de entrada único. Cada critério da rubrica aponta para onde está o entr
 | **Análise crítica (20%)** | `relatorio/analise_critica.md` | 7 perguntas com exemplos de log, 3 casos de falha, comparação plano × agente, limitações do modelo e da integração |
 | **Documentação e vídeo (5%)** | `relatorio/relatorio.md`, `video/roteiro_video.md` | Relatório de 4–6 páginas; roteiro cronometrado do vídeo (demo = I2) |
 | **Extra — comparar modelos locais** | `agent/comparar_modelos.py`, `relatorio/comparacao_modelos.md` | Reenvia uma decisão registrada a vários modelos do Ollama; 3 modelos (qwen3:4b, llama3.2:3b, gemma2:2b) — nenhum conduz sozinho |
+| **Extra — estrutura do web service** | `relatorio/estruturas_web.md` | Como a análise muda entre SPA+REST+JWT e um CMS (WordPress); o agente é específico do alvo |
 
 ## Resultado de cada investigação
 

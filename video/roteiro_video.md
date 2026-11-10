@@ -1,5 +1,7 @@
 # Roteiro do vídeo (até 10 min)
 
+> **Provisório.** A estrutura final do vídeo segue a especificação que o professor vai enviar. Ajustar este roteiro quando ela chegar; por ora, serve de base com uma investigação completa (I2).
+
 Alvo: ~9:30, com folga. Demonstração: **investigação I2 (autorização/IDOR)** — a mais rica em supervisão (rejeição, modificação, alucinação corrigida, a intervenção que confirma a falha e o loop). I3 (SQL injection) entra como menção forte.
 
 > **Importante (honestidade e nota):** a dupla deve **conduzir/narrar a demo vocês mesmos** — relendo os logs e, de preferência, reexecutando a I2 ao vivo (vocês treinaram para isso). A banca vai perguntar; cada integrante deve falar em pelo menos um bloco. Cortes de espera da inferência (31–78 s por turno) devem ser **sinalizados na tela**.
