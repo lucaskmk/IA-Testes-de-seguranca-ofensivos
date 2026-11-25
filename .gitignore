@@ -3,4 +3,3 @@ __pycache__/
 .venv/
 .pytest_cache/
 agent/config.toml
-.claude/settings.local.json
