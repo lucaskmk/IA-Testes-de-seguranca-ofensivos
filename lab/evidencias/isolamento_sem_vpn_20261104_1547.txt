@@ -1,0 +1,10 @@
+﻿# Teste de isolamento 1: notebook na rede WannaCry, VPN desligada
+data=2026-11-04T15:44:42.0127121-03:00
+ip_wifi=172.16.50.216
+vpn_adaptador=169.254.111.231
+rota_para_10.0.80.0/24=ausente
+192.168.20.26:3000 tcp_aberta=False
+192.168.20.26:11434 tcp_aberta=False
+192.168.20.26:22 tcp_aberta=False
+10.0.80.3:3000 tcp_aberta=False
+10.0.80.3:22 tcp_aberta=False

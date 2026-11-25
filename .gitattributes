@@ -1,0 +1,9 @@
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+Dockerfile text eol=lf
+# logs e evidências ficam byte a byte como gerados (o log guarda o SHA-256 das saídas)
+logs/** -text
+lab/evidencias/** -text

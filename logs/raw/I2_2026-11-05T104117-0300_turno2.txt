@@ -1,0 +1,16 @@
+HTTP/1.1 201 Created
+Access-Control-Allow-Origin: *
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Feature-Policy: payment 'self'
+X-Recruiting: /#/jobs
+Location: /api/Users/25
+Content-Type: application/json; charset=utf-8
+Content-Length: 311
+ETag: W/"137-YF9LmSc6uALA3gyuSxdarxmCVOs"
+Vary: Accept-Encoding
+Date: Thu, 05 Nov 2026 13:43:15 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"status":"success","data":{"username":"","role":"customer","deluxeToken":"","lastLoginIp":"0.0.0.0","profileImage":"/assets/public/images/uploads/default.svg","isActive":true,"id":25,"email":"af-teste@juice.local","updatedAt":"2026-11-05T13:43:15.661Z","createdAt":"2026-11-05T13:43:15.661Z","deletedAt":null}}

@@ -1,0 +1,30 @@
+# Configuração do agente. Copie para agent/config.toml para alterar localmente.
+# Caminhos relativos são resolvidos a partir da raiz do repositório.
+
+[modelo]
+nome = "qwen3:4b"
+url = "http://127.0.0.1:11434"
+temperature = 0.2
+seed = 42
+num_ctx = 8192
+think = false
+timeout_s = 900
+
+[alvo]
+container = "kali"     # todas as ferramentas rodam dentro deste container
+host = "juiceshop"     # único host aceito (nome na rede labnet)
+porta = 3000           # única porta aceita
+
+[limites]
+max_turnos = 15
+max_chars_resumo = 3500     # saída enviada ao modelo por turno
+historico_turnos = 6        # turnos anteriores resumidos no prompt
+max_fatos = 15
+max_corpo_bytes = 10000
+timeout_ferramenta_s = 300
+
+[caminhos]
+logs = "logs"
+restore = "lab/restore.sh"
+prompt_sistema = "agent/prompts/sistema.md"
+prompt_revisao = "agent/prompts/revisao_plano.md"
